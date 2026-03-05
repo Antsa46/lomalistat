@@ -1,0 +1,6038 @@
+
+
+===== D:\Software\ied\Lomalistat\src\components\ui\badge.tsx =====
+
+import { cva, type VariantProps } from "class-variance-authority";
+import type { HTMLAttributes } from "react";
+import { cn } from "../../lib/utils";
+
+const badgeVariants = cva("inline-flex items-center rounded-full px-2.5 py-1 text-xs font-bold", {
+  variants: {
+    variant: {
+      default: "bg-slate-200 text-slate-900",
+      success: "bg-green-100 text-green-900",
+      warning: "bg-amber-100 text-amber-900",
+      danger: "bg-red-100 text-red-900",
+      outline: "border border-border text-foreground"
+    }
+  },
+  defaultVariants: {
+    variant: "default"
+  }
+});
+
+interface BadgeProps extends HTMLAttributes<HTMLDivElement>, VariantProps<typeof badgeVariants> {}
+
+export function Badge({ className, variant, ...props }: BadgeProps) {
+  return <div className={cn(badgeVariants({ variant }), className)} {...props} />;
+}
+
+
+
+===== D:\Software\ied\Lomalistat\src\components\ui\button.tsx =====
+
+import * as React from "react";
+import { cva, type VariantProps } from "class-variance-authority";
+import { cn } from "../../lib/utils";
+
+const buttonVariants = cva(
+  "inline-flex items-center justify-center rounded-xl px-3 py-2 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:pointer-events-none disabled:opacity-50",
+  {
+    variants: {
+      variant: {
+        default: "bg-primary text-primary-foreground hover:opacity-90",
+        secondary: "bg-muted text-foreground hover:bg-slate-200",
+        outline: "border border-border bg-white text-foreground hover:bg-slate-50",
+        danger: "bg-danger text-white hover:opacity-90"
+      },
+      size: {
+        default: "h-10",
+        sm: "h-8 px-2 text-xs",
+        lg: "h-11 px-4"
+      }
+    },
+    defaultVariants: {
+      variant: "default",
+      size: "default"
+    }
+  }
+);
+
+export interface ButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof buttonVariants> {}
+
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ className, variant, size, type = "button", ...props }, ref) => {
+    return (
+      <button
+        type={type}
+        ref={ref}
+        className={cn(buttonVariants({ variant, size }), className)}
+        {...props}
+      />
+    );
+  }
+);
+Button.displayName = "Button";
+
+export { Button };
+
+
+===== D:\Software\ied\Lomalistat\src\components\ui\card.tsx =====
+
+import * as React from "react";
+import { cn } from "../../lib/utils";
+
+export function Card({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      className={cn("rounded-2xl border border-border bg-white p-4 shadow-sm", className)}
+      {...props}
+    />
+  );
+}
+
+export function CardTitle({ className, ...props }: React.ComponentProps<"h3">) {
+  return <h3 className={cn("text-lg font-semibold text-foreground", className)} {...props} />;
+}
+
+export function CardDescription({ className, ...props }: React.ComponentProps<"p">) {
+  return <p className={cn("text-sm text-muted-foreground", className)} {...props} />;
+}
+
+
+
+===== D:\Software\ied\Lomalistat\src\components\ui\checkbox.tsx =====
+
+import type { InputHTMLAttributes } from "react";
+import { cn } from "../../lib/utils";
+
+export function Checkbox({ className, ...props }: InputHTMLAttributes<HTMLInputElement>) {
+  return (
+    <input
+      type="checkbox"
+      className={cn(
+        "h-4 w-4 rounded border border-border text-primary accent-primary focus:ring-2 focus:ring-primary",
+        className
+      )}
+      {...props}
+    />
+  );
+}
+
+
+
+===== D:\Software\ied\Lomalistat\src\components\ui\input.tsx =====
+
+import * as React from "react";
+import { cn } from "../../lib/utils";
+
+export const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
+  ({ className, ...props }, ref) => {
+    return (
+      <input
+        ref={ref}
+        className={cn(
+          "h-10 w-full rounded-xl border border-border bg-white px-3 text-sm text-foreground shadow-sm outline-none ring-primary placeholder:text-muted-foreground focus:ring-2",
+          className
+        )}
+        {...props}
+      />
+    );
+  }
+);
+
+Input.displayName = "Input";
+
+
+===== D:\Software\ied\Lomalistat\src\components\ui\label.tsx =====
+
+import type { LabelHTMLAttributes } from "react";
+import { cn } from "../../lib/utils";
+
+export function Label({ className, ...props }: LabelHTMLAttributes<HTMLLabelElement>) {
+  return <label className={cn("text-sm font-medium text-foreground", className)} {...props} />;
+}
+
+
+
+===== D:\Software\ied\Lomalistat\src\components\ui\number-input.tsx =====
+
+import * as React from "react";
+import { cn } from "../../lib/utils";
+
+interface NumberInputProps
+  extends Omit<React.ComponentProps<"input">, "type" | "value" | "onChange"> {
+  value: number;
+  onValueChange: (next: number) => void;
+}
+
+export const NumberInput = React.forwardRef<HTMLInputElement, NumberInputProps>(
+  ({ className, value, onValueChange, onBlur, onFocus, onKeyDown, ...props }, ref) => {
+    const [draft, setDraft] = React.useState(String(value));
+    const [editing, setEditing] = React.useState(false);
+
+    React.useEffect(() => {
+      if (!editing) {
+        setDraft(String(value));
+      }
+    }, [value, editing]);
+
+    const commit = React.useCallback(() => {
+      setEditing(false);
+      const trimmed = draft.trim();
+      if (trimmed === "") {
+        setDraft(String(value));
+        return;
+      }
+      const parsed = Number(trimmed);
+      if (Number.isFinite(parsed)) {
+        onValueChange(parsed);
+      } else {
+        setDraft(String(value));
+      }
+    }, [draft, onValueChange, value]);
+
+    return (
+      <input
+        ref={ref}
+        type="number"
+        value={draft}
+        className={cn(
+          "h-10 w-full rounded-xl border border-border bg-white px-3 text-sm text-foreground shadow-sm outline-none ring-primary placeholder:text-muted-foreground focus:ring-2",
+          className
+        )}
+        onFocus={(event) => {
+          setEditing(true);
+          onFocus?.(event);
+        }}
+        onBlur={(event) => {
+          commit();
+          onBlur?.(event);
+        }}
+        onChange={(event) => {
+          const raw = event.target.value;
+          setDraft(raw);
+          if (raw.trim() === "" || raw === "-" || raw === "." || raw === "-.") {
+            return;
+          }
+          const parsed = Number(raw);
+          if (Number.isFinite(parsed)) {
+            onValueChange(parsed);
+          }
+        }}
+        onKeyDown={(event) => {
+          if (event.key === "Enter") {
+            commit();
+          } else if (event.key === "Escape") {
+            setDraft(String(value));
+            setEditing(false);
+          }
+          onKeyDown?.(event);
+        }}
+        {...props}
+      />
+    );
+  }
+);
+
+NumberInput.displayName = "NumberInput";
+
+
+
+===== D:\Software\ied\Lomalistat\src\components\ui\select.tsx =====
+
+import * as React from "react";
+import { cn } from "../../lib/utils";
+
+export const Select = React.forwardRef<HTMLSelectElement, React.ComponentProps<"select">>(
+  ({ className, children, ...props }, ref) => (
+    <select
+      ref={ref}
+      className={cn(
+        "h-10 w-full rounded-xl border border-border bg-white px-3 text-sm text-foreground shadow-sm outline-none ring-primary focus:ring-2",
+        className
+      )}
+      {...props}
+    >
+      {children}
+    </select>
+  )
+);
+
+Select.displayName = "Select";
+
+
+
+===== D:\Software\ied\Lomalistat\src\components\ui\table.tsx =====
+
+import * as React from "react";
+import { cn } from "../../lib/utils";
+
+export function TableWrapper({ className, ...props }: React.ComponentProps<"div">) {
+  return <div className={cn("w-full overflow-auto rounded-xl border border-border", className)} {...props} />;
+}
+
+export function Table({ className, ...props }: React.ComponentProps<"table">) {
+  return <table className={cn("w-full border-collapse text-sm", className)} {...props} />;
+}
+
+export function Th({ className, ...props }: React.ComponentProps<"th">) {
+  return (
+    <th
+      className={cn(
+        "border-b border-border bg-slate-100 px-2 py-2 text-left font-semibold text-slate-700",
+        className
+      )}
+      {...props}
+    />
+  );
+}
+
+export function Td({ className, ...props }: React.ComponentProps<"td">) {
+  return <td className={cn("border-b border-border px-2 py-2", className)} {...props} />;
+}
+
+
+
+===== D:\Software\ied\Lomalistat\src\components\ui\textarea.tsx =====
+
+import * as React from "react";
+import { cn } from "../../lib/utils";
+
+export const Textarea = React.forwardRef<HTMLTextAreaElement, React.ComponentProps<"textarea">>(
+  ({ className, ...props }, ref) => (
+    <textarea
+      ref={ref}
+      className={cn(
+        "min-h-20 w-full rounded-xl border border-border bg-white p-3 text-sm text-foreground shadow-sm outline-none ring-primary placeholder:text-muted-foreground focus:ring-2",
+        className
+      )}
+      {...props}
+    />
+  )
+);
+
+Textarea.displayName = "Textarea";
+
+
+
+===== D:\Software\ied\Lomalistat\src\controller\demo-data.test.ts =====
+
+import { generateDemoProject } from "./demo-data";
+
+function isoWeekFromUtcDate(date: Date): number {
+  const target = new Date(
+    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())
+  );
+  const dayNumber = target.getUTCDay() || 7;
+  target.setUTCDate(target.getUTCDate() + 4 - dayNumber);
+  const yearStart = new Date(Date.UTC(target.getUTCFullYear(), 0, 1));
+  return Math.ceil(((target.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
+}
+
+describe("generateDemoProject", () => {
+  it("creates 4 groups with 50/50/50/100 workers and one 4-week request per worker in Apr-Sep", () => {
+    const year = 2026;
+    const project = generateDemoProject(1337, year);
+
+    expect(project.groups).toHaveLength(4);
+    expect(project.workers).toHaveLength(250);
+    expect(project.requests).toHaveLength(250);
+
+    const countsByGroup = project.groups.map(
+      (group) => project.workers.filter((worker) => worker.groupId === group.id).length
+    );
+    expect(countsByGroup).toEqual([50, 50, 50, 100]);
+
+    const aprilWeek = isoWeekFromUtcDate(new Date(Date.UTC(year, 3, 1)));
+    const septemberWeek = isoWeekFromUtcDate(new Date(Date.UTC(year, 8, 30)));
+    const maxStart = septemberWeek - 4 + 1;
+
+    expect(project.timeWindow.startWeek).toBe(aprilWeek);
+    expect(project.timeWindow.endWeek).toBe(septemberWeek);
+    expect(project.timeWindow.includeMonths).toEqual([4, 5, 6, 7, 8, 9]);
+
+    for (const request of project.requests) {
+      expect(request.endWeek - request.startWeek + 1).toBe(4);
+      expect(request.startWeek).toBeGreaterThanOrEqual(aprilWeek);
+      expect(request.startWeek).toBeLessThanOrEqual(maxStart);
+      expect(request.priority).toBe(2);
+    }
+  });
+});
+
+
+===== D:\Software\ied\Lomalistat\src\controller\demo-data.ts =====
+
+import { generatePlan } from "../engine/generatePlan";
+import type { ProjectData, Skill, Worker } from "../model/types";
+import { nowIso } from "../model/id";
+
+function mulberry32(seed: number): () => number {
+  let t = seed >>> 0;
+  return () => {
+    t += 0x6d2b79f5;
+    let n = Math.imul(t ^ (t >>> 15), 1 | t);
+    n ^= n + Math.imul(n ^ (n >>> 7), 61 | n);
+    return ((n ^ (n >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function randomInt(rng: () => number, min: number, max: number): number {
+  return Math.floor(rng() * (max - min + 1)) + min;
+}
+
+function pickUnique<T>(items: T[], count: number, rng: () => number): T[] {
+  const copy = [...items];
+  for (let i = copy.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(rng() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy.slice(0, Math.min(count, copy.length));
+}
+
+function isoWeekFromUtcDate(date: Date): number {
+  const target = new Date(
+    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())
+  );
+  const dayNumber = target.getUTCDay() || 7;
+  target.setUTCDate(target.getUTCDate() + 4 - dayNumber);
+  const yearStart = new Date(Date.UTC(target.getUTCFullYear(), 0, 1));
+  return Math.ceil(((target.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
+}
+
+export function generateDemoProject(seed = 1337, year = 2026): ProjectData {
+  const rng = mulberry32(seed);
+  const now = nowIso();
+  let idCounter = 1;
+  const nextId = (prefix: string): string => `${prefix}-${seed}-${idCounter++}`;
+
+  const groupSpecs = [
+    { name: "Team A", workerCount: 50 },
+    { name: "Team B", workerCount: 50 },
+    { name: "Team C", workerCount: 50 },
+    { name: "Team D", workerCount: 100 }
+  ];
+  const groups = groupSpecs.map((spec) => ({
+    id: nextId("grp"),
+    name: spec.name,
+    minHeadcountPerWeek: Math.max(
+      1,
+      spec.workerCount - randomInt(rng, Math.ceil(spec.workerCount * 0.15), Math.ceil(spec.workerCount * 0.28))
+    )
+  }));
+
+  const skills: Skill[] = Array.from({ length: 16 }, (_, idx) => ({
+    id: nextId("skill"),
+    name: `Skill ${idx + 1}`
+  }));
+
+  let workerIndex = 1;
+  const workers: Worker[] = groups.flatMap((group, index) => {
+    const count = groupSpecs[index].workerCount;
+    return Array.from({ length: count }, () => {
+      const skillCount = randomInt(rng, 1, 6);
+      const worker: Worker = {
+        id: nextId("wrk"),
+        name: `Worker ${workerIndex}`,
+        groupId: group.id,
+        skillIds: pickUnique(skills.map((skill) => skill.id), skillCount, rng).sort()
+      };
+      workerIndex += 1;
+      return worker;
+    });
+  });
+
+  const skillRequirements = groups.flatMap((group) => {
+    const requirementCount = randomInt(rng, 2, 4);
+    const pickedSkills = pickUnique(skills, requirementCount, rng);
+    const groupWorkerCount = workers.filter((worker) => worker.groupId === group.id).length;
+    return pickedSkills.map((skill) => ({
+      id: nextId("req"),
+      groupId: group.id,
+      skillId: skill.id,
+      minPerWeek: randomInt(rng, Math.max(2, Math.floor(groupWorkerCount * 0.1)), Math.max(3, Math.floor(groupWorkerCount * 0.2)))
+    }));
+  });
+
+  const aprilWeek = isoWeekFromUtcDate(new Date(Date.UTC(year, 3, 1)));
+  const septemberWeek = isoWeekFromUtcDate(new Date(Date.UTC(year, 8, 30)));
+  const vacationLength = 4;
+  const requestStartMin = Math.max(1, Math.min(53 - vacationLength + 1, aprilWeek));
+  const requestStartMax = Math.max(
+    requestStartMin,
+    Math.min(53 - vacationLength + 1, septemberWeek - vacationLength + 1)
+  );
+
+  const requests = workers.map((worker) => {
+    const startWeek = randomInt(rng, requestStartMin, requestStartMax);
+    return {
+      id: nextId("reqv"),
+      workerId: worker.id,
+      startWeek,
+      endWeek: startWeek + vacationLength - 1,
+      priority: 2 as const
+    };
+  });
+
+  const baseProject: ProjectData = {
+    schemaVersion: 1,
+    project: {
+      id: `demo-${seed}`,
+      name: "Demo 250 workers",
+      createdAt: now,
+      updatedAt: now
+    },
+    timeWindow: {
+      year,
+      startWeek: requestStartMin,
+      endWeek: septemberWeek,
+      includeMonths: [4, 5, 6, 7, 8, 9]
+    },
+    groups,
+    skills,
+    skillRequirements,
+    workers,
+    requests,
+    plan: {
+      assignments: {},
+      groupOverrides: {},
+      generatedAt: now
+    },
+    violations: [],
+    unmetRequests: []
+  };
+
+  const generated = generatePlan(baseProject);
+  return {
+    ...baseProject,
+    plan: generated.plan,
+    violations: generated.violations,
+    unmetRequests: generated.unmetRequests
+  };
+}
+
+
+===== D:\Software\ied\Lomalistat\src\controller\project-io.test.ts =====
+
+import { exportProjectToJson, importProjectFromJson } from "./project-io";
+import { createFixtureProject } from "../test/fixtureProject";
+
+describe("project import/export", () => {
+  it("round-trips without data loss", () => {
+    const original = createFixtureProject();
+    const json = exportProjectToJson(original);
+    const imported = importProjectFromJson(json);
+    expect(imported).toEqual(original);
+  });
+});
+
+
+
+===== D:\Software\ied\Lomalistat\src\controller\project-io.ts =====
+
+import type { ProjectData } from "../model/types";
+import { migrateToV1 } from "../model/migrations";
+import { validateProjectV1 } from "../model/validation";
+
+function sanitizeName(name: string): string {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9_-]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+}
+
+export function createExportFilename(project: ProjectData): string {
+  const baseName = sanitizeName(project.project.name) || "project";
+  const { year, startWeek, endWeek } = project.timeWindow;
+  return `${baseName}_${year}_${startWeek}-${endWeek}.json`;
+}
+
+export function exportProjectToJson(project: ProjectData): string {
+  return JSON.stringify(project, null, 2);
+}
+
+export function importProjectFromJson(rawJson: string): ProjectData {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(rawJson);
+  } catch {
+    throw new Error("Import failed: tiedosto ei ollut validia JSONia.");
+  }
+
+  const migrated = migrateToV1(parsed);
+  const validation = validateProjectV1(migrated);
+  if (!validation.valid || !validation.value) {
+    throw new Error(`Import failed: ${validation.errors.join(" ")}`);
+  }
+  return validation.value;
+}
+
+
+
+===== D:\Software\ied\Lomalistat\src\controller\project-pdf.ts =====
+
+import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFPage } from "pdf-lib";
+import type { ProjectData } from "../model/types";
+import { listWeeks } from "../model/weeks";
+
+export type PdfExportMode = "vacations_only" | "full";
+
+function sanitizeName(name: string): string {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9_-]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+}
+
+function createPdfFilename(project: ProjectData, mode: PdfExportMode): string {
+  const baseName = sanitizeName(project.project.name) || "project";
+  const { year, startWeek, endWeek } = project.timeWindow;
+  if (mode === "vacations_only") {
+    return `${baseName}_${year}_${startWeek}-${endWeek}_vacations.pdf`;
+  }
+  return `${baseName}_${year}_${startWeek}-${endWeek}.pdf`;
+}
+
+function toRanges(weeks: number[]): string {
+  if (weeks.length === 0) {
+    return "none";
+  }
+  const sorted = [...new Set(weeks)].sort((a, b) => a - b);
+  const ranges: string[] = [];
+  let start = sorted[0];
+  let previous = sorted[0];
+  for (let i = 1; i < sorted.length; i += 1) {
+    const week = sorted[i];
+    if (week === previous + 1) {
+      previous = week;
+      continue;
+    }
+    ranges.push(start === previous ? `W${start}` : `W${start}-W${previous}`);
+    start = week;
+    previous = week;
+  }
+  ranges.push(start === previous ? `W${start}` : `W${start}-W${previous}`);
+  return ranges.join(", ");
+}
+
+function wrapText(text: string, font: PDFFont, size: number, maxWidth: number): string[] {
+  if (!text) {
+    return [""];
+  }
+  const words = text.split(/\s+/);
+  const lines: string[] = [];
+  let current = "";
+  for (const word of words) {
+    const next = current ? `${current} ${word}` : word;
+    if (font.widthOfTextAtSize(next, size) <= maxWidth) {
+      current = next;
+      continue;
+    }
+    if (current) {
+      lines.push(current);
+      current = word;
+      continue;
+    }
+    let part = "";
+    for (const char of word) {
+      const candidate = `${part}${char}`;
+      if (font.widthOfTextAtSize(candidate, size) <= maxWidth) {
+        part = candidate;
+      } else {
+        lines.push(part);
+        part = char;
+      }
+    }
+    current = part;
+  }
+  if (current) {
+    lines.push(current);
+  }
+  return lines;
+}
+
+export async function exportProjectToPdf(project: ProjectData): Promise<{
+  filename: string;
+  bytes: Uint8Array;
+}>;
+export async function exportProjectToPdf(
+  project: ProjectData,
+  options: { mode?: PdfExportMode }
+): Promise<{
+  filename: string;
+  bytes: Uint8Array;
+}>;
+export async function exportProjectToPdf(
+  project: ProjectData,
+  options?: { mode?: PdfExportMode }
+): Promise<{
+  filename: string;
+  bytes: Uint8Array;
+}> {
+  const mode: PdfExportMode = options?.mode ?? "full";
+  const pdf = await PDFDocument.create();
+  const fontRegular = await pdf.embedFont(StandardFonts.Helvetica);
+  const fontBold = await pdf.embedFont(StandardFonts.HelveticaBold);
+
+  const pageWidth = 595.28;
+  const pageHeight = 841.89;
+  const margin = 40;
+  const contentWidth = pageWidth - margin * 2;
+  let page: PDFPage = pdf.addPage([pageWidth, pageHeight]);
+  let y = pageHeight - margin;
+
+  const ensureSpace = (heightNeeded: number) => {
+    if (y - heightNeeded >= margin) {
+      return;
+    }
+    page = pdf.addPage([pageWidth, pageHeight]);
+    y = pageHeight - margin;
+  };
+
+  const writeLine = (
+    text: string,
+    options: {
+      bold?: boolean;
+      size?: number;
+      color?: { r: number; g: number; b: number };
+      indent?: number;
+      gapAfter?: number;
+    } = {}
+  ) => {
+    const size = options.size ?? 10;
+    const lineHeight = size + 4;
+    const font = options.bold ? fontBold : fontRegular;
+    const indent = options.indent ?? 0;
+    const maxWidth = contentWidth - indent;
+    const lines = wrapText(text, font, size, maxWidth);
+    for (const line of lines) {
+      ensureSpace(lineHeight);
+      page.drawText(line, {
+        x: margin + indent,
+        y,
+        size,
+        font,
+        color: options.color ? rgb(options.color.r, options.color.g, options.color.b) : rgb(0, 0, 0)
+      });
+      y -= lineHeight;
+    }
+    if (options.gapAfter) {
+      y -= options.gapAfter;
+    }
+  };
+
+  const weeks = listWeeks(project.timeWindow);
+  const groupMap = new Map(project.groups.map((group) => [group.id, group.name]));
+  const skillMap = new Map(project.skills.map((skill) => [skill.id, skill.name]));
+
+  writeLine("Lomalistat - Project PDF Export", {
+    bold: true,
+    size: 16,
+    color: { r: 0.06, g: 0.19, b: 0.39 },
+    gapAfter: 4
+  });
+  writeLine(mode === "vacations_only" ? "Mode: Vacations only" : "Mode: Full report");
+  writeLine(`Project: ${project.project.name}`, { bold: true });
+  writeLine(
+    `Time window: ${project.timeWindow.year}, weeks W${project.timeWindow.startWeek}-W${project.timeWindow.endWeek}`
+  );
+  writeLine(`Groups: ${project.groups.length}, Workers: ${project.workers.length}`);
+  writeLine(`Requests: ${project.requests.length}, Violations: ${project.violations.length}`);
+  writeLine(`Unmet requests: ${project.unmetRequests.length}`, { gapAfter: 6 });
+
+  if (mode === "full") {
+    writeLine("Groups", { bold: true, size: 12 });
+    for (const group of project.groups) {
+      writeLine(
+        `- ${group.name}: min headcount per week ${group.minHeadcountPerWeek}`
+      );
+    }
+    writeLine("", { gapAfter: 2 });
+
+    writeLine("Skill requirements", { bold: true, size: 12 });
+    if (project.skillRequirements.length === 0) {
+      writeLine("- none");
+    } else {
+      const sortedRequirements = [...project.skillRequirements].sort((a, b) => {
+        if (a.groupId !== b.groupId) {
+          return a.groupId.localeCompare(b.groupId);
+        }
+        return a.skillId.localeCompare(b.skillId);
+      });
+      for (const requirement of sortedRequirements) {
+        writeLine(
+          `- ${groupMap.get(requirement.groupId) ?? requirement.groupId}: ${
+            skillMap.get(requirement.skillId) ?? requirement.skillId
+          } min ${requirement.minPerWeek}/week`
+        );
+      }
+    }
+    writeLine("", { gapAfter: 2 });
+  }
+
+  writeLine("Workers and planned vacation weeks", { bold: true, size: 12 });
+  const sortedWorkers = [...project.workers].sort((a, b) => a.name.localeCompare(b.name));
+  for (const worker of sortedWorkers) {
+    const workerAssignments = project.plan.assignments[worker.id] ?? {};
+    const vacationWeeks = weeks.filter((week) => workerAssignments[week] === "VACATION");
+    if (mode === "vacations_only") {
+      writeLine(
+        `- ${worker.name} | Team: ${groupMap.get(worker.groupId) ?? worker.groupId} | Vacation: ${toRanges(vacationWeeks)}`
+      );
+    } else {
+      writeLine(
+        `- ${worker.name} (${groupMap.get(worker.groupId) ?? worker.groupId}) | Skills: ${
+          worker.skillIds.length
+        } | Vacation: ${toRanges(vacationWeeks)}`
+      );
+    }
+  }
+  writeLine("", { gapAfter: 2 });
+
+  if (mode === "full") {
+    writeLine("Top violations", { bold: true, size: 12 });
+    if (project.violations.length === 0) {
+      writeLine("- none");
+    } else {
+      const sortedViolations = [...project.violations]
+        .sort((a, b) => b.missing - a.missing || a.week - b.week)
+        .slice(0, 200);
+      for (const violation of sortedViolations) {
+        writeLine(
+          `- W${violation.week} ${groupMap.get(violation.groupId) ?? violation.groupId} ${
+            violation.type
+          }${violation.skillId ? ` ${skillMap.get(violation.skillId) ?? violation.skillId}` : ""}: req ${
+            violation.required
+          }, actual ${violation.actual}, missing ${violation.missing}`
+        );
+      }
+    }
+  }
+
+  const bytes = await pdf.save();
+  return {
+    filename: createPdfFilename(project, mode),
+    bytes
+  };
+}
+
+
+===== D:\Software\ied\Lomalistat\src\controller\useProjectStore.ts =====
+
+import { create } from "zustand";
+import { recalculateDerived } from "../engine/recalc";
+import {
+  generatePlan as runGeneratePlan,
+  generatePlanWithTransfers as runGeneratePlanWithTransfers
+} from "../engine/generatePlan";
+import { buildDefaultAssignments } from "../engine/constraints";
+import { generateDemoProject } from "./demo-data";
+import {
+  createExportFilename,
+  exportProjectToJson,
+  importProjectFromJson
+} from "./project-io";
+import { createEmptyProject } from "../model/factory";
+import { createId, nowIso } from "../model/id";
+import type {
+  AssignmentState,
+  Priority,
+  ProjectData,
+  TimeWindow
+} from "../model/types";
+import { clampWeek, normalizeTimeWindow } from "../model/weeks";
+import { debounce } from "../lib/utils";
+import { IndexedDBRepo } from "../repository/IndexedDBRepo";
+
+type AppPage = "wizard" | "planner";
+
+interface CreateProjectInput {
+  name: string;
+  year: number;
+  startWeek: number;
+  endWeek: number;
+}
+
+interface ProjectStore {
+  project: ProjectData | null;
+  loading: boolean;
+  error: string | null;
+  isMagicGenerating: boolean;
+  page: AppPage;
+  wizardStep: number;
+
+  initialize: () => Promise<void>;
+  clearError: () => void;
+  setPage: (page: AppPage) => void;
+  setWizardStep: (step: number) => void;
+
+  createProject: (input: CreateProjectInput) => void;
+  updateProjectName: (name: string) => void;
+  setTimeWindow: (patch: Partial<TimeWindow>) => void;
+
+  addGroup: (name: string, minHeadcountPerWeek: number) => void;
+  updateGroup: (groupId: string, patch: { name?: string; minHeadcountPerWeek?: number }) => void;
+  removeGroup: (groupId: string) => void;
+
+  addWorker: (name: string, groupId: string) => void;
+  updateWorker: (workerId: string, patch: { name?: string; groupId?: string }) => void;
+  removeWorker: (workerId: string) => void;
+  moveWorker: (workerId: string, groupId: string) => void;
+
+  addSkill: (name: string) => void;
+  updateSkill: (skillId: string, patch: { name?: string }) => void;
+  removeSkill: (skillId: string) => void;
+  setWorkerSkills: (workerId: string, skillIds: string[]) => void;
+
+  addSkillRequirement: (groupId: string, skillId: string, minPerWeek: number) => void;
+  updateSkillRequirement: (
+    requirementId: string,
+    patch: { groupId?: string; skillId?: string; minPerWeek?: number }
+  ) => void;
+  removeSkillRequirement: (requirementId: string) => void;
+
+  addRequest: (
+    workerId: string,
+    startWeek: number,
+    endWeek: number,
+    priority: Priority
+  ) => void;
+  updateRequest: (
+    requestId: string,
+    patch: { workerId?: string; startWeek?: number; endWeek?: number; priority?: Priority }
+  ) => void;
+  removeRequest: (requestId: string) => void;
+
+  generatePlan: () => void;
+  generatePlanWithTransfers: () => Promise<void>;
+  toggleWeekAssignment: (workerId: string, week: number) => void;
+  setWeekGroupOverride: (workerId: string, week: number, groupId: string | null) => void;
+  recalcViolations: () => void;
+
+  exportProject: () => { filename: string; content: string } | null;
+  importProject: (jsonText: string) => Promise<void>;
+  generateDemoData: (seed?: number) => Promise<void>;
+  resetLocalData: () => Promise<void>;
+}
+
+const repo = new IndexedDBRepo();
+
+function nextFrame(): Promise<void> {
+  return new Promise((resolve) => {
+    if (typeof window === "undefined") {
+      setTimeout(resolve, 0);
+      return;
+    }
+    window.requestAnimationFrame(() => resolve());
+  });
+}
+
+function waitMs(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+const persistDebounced = debounce((project: ProjectData) => {
+  void repo.saveProject(project);
+}, 500);
+
+function refreshDerived(project: ProjectData): void {
+  const derived = recalculateDerived(project);
+  project.violations = derived.violations;
+  project.unmetRequests = derived.unmetRequests;
+}
+
+export const useProjectStore = create<ProjectStore>((set, get) => {
+  const mutateProject = (
+    mutator: (project: ProjectData) => void,
+    options: { recalc?: boolean } = {}
+  ) => {
+    const current = get().project;
+    if (!current) {
+      return;
+    }
+    const draft = structuredClone(current);
+    mutator(draft);
+    draft.project.updatedAt = nowIso();
+
+    const shouldRecalc = options.recalc ?? true;
+    if (shouldRecalc) {
+      refreshDerived(draft);
+    }
+
+    set({ project: draft, error: null });
+    persistDebounced(draft);
+  };
+
+  return {
+    project: null,
+    loading: true,
+    error: null,
+    isMagicGenerating: false,
+    page: "wizard",
+    wizardStep: 0,
+
+    async initialize() {
+      try {
+        const loadedRaw = await repo.loadProject();
+        const loaded = loadedRaw
+          ? {
+              ...loadedRaw,
+              plan: {
+                ...loadedRaw.plan,
+                groupOverrides: loadedRaw.plan.groupOverrides ?? {}
+              }
+            }
+          : null;
+        set({
+          project: loaded,
+          loading: false,
+          page: loaded ? "planner" : "wizard"
+        });
+      } catch (error) {
+        set({
+          loading: false,
+          error: error instanceof Error ? error.message : "Loading local data failed."
+        });
+      }
+    },
+
+    clearError() {
+      set({ error: null });
+    },
+
+    setPage(page) {
+      set({ page });
+    },
+
+    setWizardStep(step) {
+      set({ wizardStep: Math.max(0, Math.min(5, step)) });
+    },
+
+    createProject(input) {
+      const project = createEmptyProject(input.name, input.year, input.startWeek, input.endWeek);
+      set({
+        project,
+        page: "wizard",
+        wizardStep: 0,
+        error: null
+      });
+      persistDebounced(project);
+    },
+
+    updateProjectName(name) {
+      mutateProject((project) => {
+        project.project.name = name;
+      }, { recalc: false });
+    },
+
+    setTimeWindow(patch) {
+      mutateProject((project) => {
+        project.timeWindow = normalizeTimeWindow({
+          ...project.timeWindow,
+          ...patch
+        });
+      });
+    },
+
+    addGroup(name, minHeadcountPerWeek) {
+      mutateProject((project) => {
+        project.groups.push({
+          id: createId("grp"),
+          name: name.trim() || `Group ${project.groups.length + 1}`,
+          minHeadcountPerWeek: Math.max(0, Math.trunc(minHeadcountPerWeek))
+        });
+      });
+    },
+
+    updateGroup(groupId, patch) {
+      mutateProject((project) => {
+        const group = project.groups.find((item) => item.id === groupId);
+        if (!group) {
+          return;
+        }
+        if (patch.name !== undefined) {
+          group.name = patch.name;
+        }
+        if (patch.minHeadcountPerWeek !== undefined) {
+          group.minHeadcountPerWeek = Math.max(0, Math.trunc(patch.minHeadcountPerWeek));
+        }
+      });
+    },
+
+    removeGroup(groupId) {
+      mutateProject((project) => {
+        project.groups = project.groups.filter((group) => group.id !== groupId);
+        project.skillRequirements = project.skillRequirements.filter(
+          (requirement) => requirement.groupId !== groupId
+        );
+
+        const removedWorkerIds = new Set(
+          project.workers.filter((worker) => worker.groupId === groupId).map((worker) => worker.id)
+        );
+        project.workers = project.workers.filter((worker) => worker.groupId !== groupId);
+        project.requests = project.requests.filter((request) => !removedWorkerIds.has(request.workerId));
+        for (const workerId of removedWorkerIds) {
+          delete project.plan.assignments[workerId];
+          delete project.plan.groupOverrides[workerId];
+        }
+
+        for (const [workerId, weekMap] of Object.entries(project.plan.groupOverrides)) {
+          const filtered = Object.fromEntries(
+            Object.entries(weekMap).filter(([, overrideGroupId]) => overrideGroupId !== groupId)
+          );
+          if (Object.keys(filtered).length === 0) {
+            delete project.plan.groupOverrides[workerId];
+          } else {
+            project.plan.groupOverrides[workerId] = filtered;
+          }
+        }
+      });
+    },
+
+    addWorker(name, groupId) {
+      mutateProject((project) => {
+        project.workers.push({
+          id: createId("worker"),
+          name: name.trim() || `Worker ${project.workers.length + 1}`,
+          groupId,
+          skillIds: []
+        });
+      });
+    },
+
+    updateWorker(workerId, patch) {
+      mutateProject((project) => {
+        const worker = project.workers.find((item) => item.id === workerId);
+        if (!worker) {
+          return;
+        }
+        if (patch.name !== undefined) {
+          worker.name = patch.name;
+        }
+        if (patch.groupId !== undefined) {
+          worker.groupId = patch.groupId;
+          delete project.plan.groupOverrides[workerId];
+        }
+      });
+    },
+
+    removeWorker(workerId) {
+      mutateProject((project) => {
+        project.workers = project.workers.filter((worker) => worker.id !== workerId);
+        project.requests = project.requests.filter((request) => request.workerId !== workerId);
+        delete project.plan.assignments[workerId];
+        delete project.plan.groupOverrides[workerId];
+      });
+    },
+
+    moveWorker(workerId, groupId) {
+      mutateProject((project) => {
+        const worker = project.workers.find((item) => item.id === workerId);
+        if (!worker) {
+          return;
+        }
+        worker.groupId = groupId;
+        delete project.plan.groupOverrides[workerId];
+      });
+    },
+
+    addSkill(name) {
+      mutateProject((project) => {
+        project.skills.push({
+          id: createId("skill"),
+          name: name.trim() || `Skill ${project.skills.length + 1}`
+        });
+      });
+    },
+
+    updateSkill(skillId, patch) {
+      mutateProject((project) => {
+        const skill = project.skills.find((item) => item.id === skillId);
+        if (!skill) {
+          return;
+        }
+        if (patch.name !== undefined) {
+          skill.name = patch.name;
+        }
+      });
+    },
+
+    removeSkill(skillId) {
+      mutateProject((project) => {
+        project.skills = project.skills.filter((skill) => skill.id !== skillId);
+        project.skillRequirements = project.skillRequirements.filter(
+          (requirement) => requirement.skillId !== skillId
+        );
+        project.workers = project.workers.map((worker) => ({
+          ...worker,
+          skillIds: worker.skillIds.filter((id) => id !== skillId)
+        }));
+      });
+    },
+
+    setWorkerSkills(workerId, skillIds) {
+      mutateProject((project) => {
+        const worker = project.workers.find((item) => item.id === workerId);
+        if (!worker) {
+          return;
+        }
+        const validSkillIds = new Set(project.skills.map((skill) => skill.id));
+        worker.skillIds = [...new Set(skillIds)].filter((skillId) => validSkillIds.has(skillId)).sort();
+      });
+    },
+
+    addSkillRequirement(groupId, skillId, minPerWeek) {
+      mutateProject((project) => {
+        project.skillRequirements.push({
+          id: createId("sreq"),
+          groupId,
+          skillId,
+          minPerWeek: Math.max(0, Math.trunc(minPerWeek))
+        });
+      });
+    },
+
+    updateSkillRequirement(requirementId, patch) {
+      mutateProject((project) => {
+        const requirement = project.skillRequirements.find((item) => item.id === requirementId);
+        if (!requirement) {
+          return;
+        }
+        if (patch.groupId !== undefined) {
+          requirement.groupId = patch.groupId;
+        }
+        if (patch.skillId !== undefined) {
+          requirement.skillId = patch.skillId;
+        }
+        if (patch.minPerWeek !== undefined) {
+          requirement.minPerWeek = Math.max(0, Math.trunc(patch.minPerWeek));
+        }
+      });
+    },
+
+    removeSkillRequirement(requirementId) {
+      mutateProject((project) => {
+        project.skillRequirements = project.skillRequirements.filter(
+          (requirement) => requirement.id !== requirementId
+        );
+      });
+    },
+
+    addRequest(workerId, startWeek, endWeek, priority) {
+      mutateProject((project) => {
+        const normalizedStart = clampWeek(Math.min(startWeek, endWeek));
+        const normalizedEnd = clampWeek(Math.max(startWeek, endWeek));
+        project.requests.push({
+          id: createId("request"),
+          workerId,
+          startWeek: normalizedStart,
+          endWeek: normalizedEnd,
+          priority
+        });
+      });
+    },
+
+    updateRequest(requestId, patch) {
+      mutateProject((project) => {
+        const request = project.requests.find((item) => item.id === requestId);
+        if (!request) {
+          return;
+        }
+        if (patch.workerId !== undefined) {
+          request.workerId = patch.workerId;
+        }
+        if (patch.startWeek !== undefined) {
+          request.startWeek = clampWeek(patch.startWeek);
+        }
+        if (patch.endWeek !== undefined) {
+          request.endWeek = clampWeek(patch.endWeek);
+        }
+        if (request.endWeek < request.startWeek) {
+          [request.startWeek, request.endWeek] = [request.endWeek, request.startWeek];
+        }
+        if (patch.priority !== undefined) {
+          request.priority = patch.priority;
+        }
+      });
+    },
+
+    removeRequest(requestId) {
+      mutateProject((project) => {
+        project.requests = project.requests.filter((request) => request.id !== requestId);
+      });
+    },
+
+    generatePlan() {
+      mutateProject(
+        (project) => {
+          const generated = runGeneratePlan(project);
+          project.plan = generated.plan;
+          project.violations = generated.violations;
+          project.unmetRequests = generated.unmetRequests;
+        },
+        { recalc: false }
+      );
+      set({ page: "planner" });
+    },
+
+    async generatePlanWithTransfers() {
+      if (!get().project) {
+        return;
+      }
+
+      const startedAt = Date.now();
+      set({ isMagicGenerating: true, error: null });
+      await nextFrame();
+      await waitMs(120);
+
+      try {
+        mutateProject(
+          (project) => {
+            const generated = runGeneratePlanWithTransfers(project);
+            project.plan = generated.plan;
+            project.violations = generated.violations;
+            project.unmetRequests = generated.unmetRequests;
+          },
+          { recalc: false }
+        );
+        set({ page: "planner" });
+      } catch (error) {
+        set({
+          error: error instanceof Error ? error.message : "Magic generation failed."
+        });
+      } finally {
+        const elapsed = Date.now() - startedAt;
+        const minVisibleMs = 1100;
+        if (elapsed < minVisibleMs) {
+          await waitMs(minVisibleMs - elapsed);
+        }
+        set({ isMagicGenerating: false });
+      }
+    },
+
+    toggleWeekAssignment(workerId, week) {
+      mutateProject(
+        (project) => {
+          project.plan.assignments = project.plan.assignments ?? buildDefaultAssignments(project);
+          project.plan.groupOverrides = project.plan.groupOverrides ?? {};
+          project.plan.assignments[workerId] ??= {};
+          const current = project.plan.assignments[workerId][week] ?? "WORK";
+          const next: AssignmentState = current === "WORK" ? "VACATION" : "WORK";
+          project.plan.assignments[workerId][week] = next;
+          if (next === "VACATION") {
+            delete project.plan.groupOverrides[workerId]?.[week];
+            if (
+              project.plan.groupOverrides[workerId] &&
+              Object.keys(project.plan.groupOverrides[workerId]).length === 0
+            ) {
+              delete project.plan.groupOverrides[workerId];
+            }
+          }
+          refreshDerived(project);
+        },
+        { recalc: false }
+      );
+    },
+
+    setWeekGroupOverride(workerId, week, groupId) {
+      mutateProject(
+        (project) => {
+          project.plan.groupOverrides = project.plan.groupOverrides ?? {};
+          const worker = project.workers.find((item) => item.id === workerId);
+          if (!worker) {
+            return;
+          }
+          if ((project.plan.assignments[workerId]?.[week] ?? "WORK") !== "WORK") {
+            return;
+          }
+
+          if (!groupId || groupId === worker.groupId) {
+            delete project.plan.groupOverrides[workerId]?.[week];
+            if (
+              project.plan.groupOverrides[workerId] &&
+              Object.keys(project.plan.groupOverrides[workerId]).length === 0
+            ) {
+              delete project.plan.groupOverrides[workerId];
+            }
+          } else {
+            project.plan.groupOverrides[workerId] ??= {};
+            project.plan.groupOverrides[workerId][week] = groupId;
+          }
+          refreshDerived(project);
+        },
+        { recalc: false }
+      );
+    },
+
+    recalcViolations() {
+      mutateProject((project) => {
+        refreshDerived(project);
+      }, { recalc: false });
+    },
+
+    exportProject() {
+      const project = get().project;
+      if (!project) {
+        return null;
+      }
+      return {
+        filename: createExportFilename(project),
+        content: exportProjectToJson(project)
+      };
+    },
+
+    async importProject(jsonText) {
+      try {
+        const imported = importProjectFromJson(jsonText);
+        set({
+          project: imported,
+          page: "planner",
+          wizardStep: 0,
+          error: null
+        });
+        await repo.saveProject(imported);
+      } catch (error) {
+        set({
+          error: error instanceof Error ? error.message : "Import failed."
+        });
+      }
+    },
+
+    async generateDemoData(seed = 1337) {
+      const demo = generateDemoProject(seed);
+      set({
+        project: demo,
+        page: "planner",
+        wizardStep: 5,
+        error: null
+      });
+      await repo.saveProject(demo);
+    },
+
+    async resetLocalData() {
+      await repo.clear();
+      const verify = await repo.loadProject();
+      set({
+        project: null,
+        page: "wizard",
+        wizardStep: 0,
+        error: verify ? "Failed to clear local data." : null
+      });
+    }
+  };
+});
+
+
+===== D:\Software\ied\Lomalistat\src\engine\constraints.test.ts =====
+
+import { buildDefaultAssignments, computeViolations } from "./constraints";
+import { createFixtureProject } from "../test/fixtureProject";
+import type { ProjectData } from "../model/types";
+
+describe("constraints", () => {
+  it("computes headcount and skill violations", () => {
+    const project = createFixtureProject();
+    const assignments = buildDefaultAssignments(project);
+
+    expect(computeViolations(project, assignments)).toHaveLength(0);
+
+    assignments.w1[1] = "VACATION";
+    assignments.w3[1] = "VACATION";
+
+    const violations = computeViolations(project, assignments);
+    const headcount = violations.find((item) => item.type === "HEADCOUNT" && item.week === 1);
+    const skill = violations.find((item) => item.type === "SKILL" && item.week === 1);
+
+    expect(headcount).toBeDefined();
+    expect(headcount?.required).toBe(2);
+    expect(headcount?.actual).toBe(1);
+    expect(headcount?.missing).toBe(1);
+
+    expect(skill).toBeDefined();
+    expect(skill?.required).toBe(1);
+    expect(skill?.actual).toBe(0);
+    expect(skill?.missing).toBe(1);
+  });
+
+  it("applies added skill requirements to weekly checks", () => {
+    const project = createFixtureProject();
+    project.skillRequirements = [];
+    const assignments = buildDefaultAssignments(project);
+
+    expect(computeViolations(project, assignments).some((item) => item.type === "SKILL")).toBe(false);
+
+    project.skillRequirements.push({
+      id: "sr-added",
+      groupId: "g1",
+      skillId: "s1",
+      minPerWeek: 3
+    });
+
+    const violations = computeViolations(project, assignments);
+    const skillViolations = violations.filter((item) => item.type === "SKILL");
+    expect(skillViolations.length).toBeGreaterThan(0);
+    expect(skillViolations.every((item) => item.required === 3)).toBe(true);
+  });
+
+  it("counts worker in overridden target group for a week", () => {
+    const project: ProjectData = {
+      schemaVersion: 1,
+      project: {
+        id: "p-override",
+        name: "Override",
+        createdAt: "2026-01-01T00:00:00.000Z",
+        updatedAt: "2026-01-01T00:00:00.000Z"
+      },
+      timeWindow: { year: 2026, startWeek: 1, endWeek: 1 },
+      groups: [
+        { id: "g1", name: "Team A", minHeadcountPerWeek: 1 },
+        { id: "g2", name: "Team B", minHeadcountPerWeek: 1 }
+      ],
+      skills: [{ id: "s1", name: "Skill 1" }],
+      skillRequirements: [
+        { id: "sr-b", groupId: "g2", skillId: "s1", minPerWeek: 1 }
+      ],
+      workers: [
+        { id: "w1", name: "A1", groupId: "g1", skillIds: ["s1"] },
+        { id: "w2", name: "A2", groupId: "g1", skillIds: [] },
+        { id: "w3", name: "B1", groupId: "g2", skillIds: [] }
+      ],
+      requests: [],
+      plan: {
+        assignments: {
+          w1: { 1: "WORK" },
+          w2: { 1: "WORK" },
+          w3: { 1: "VACATION" }
+        },
+        groupOverrides: {},
+        generatedAt: "2026-01-01T00:00:00.000Z"
+      },
+      violations: [],
+      unmetRequests: []
+    };
+
+    const before = computeViolations(project, project.plan.assignments, project.plan.groupOverrides);
+    expect(before.some((item) => item.groupId === "g2" && item.type === "HEADCOUNT")).toBe(true);
+    expect(before.some((item) => item.groupId === "g2" && item.type === "SKILL")).toBe(true);
+
+    const overrides = {
+      w1: { 1: "g2" }
+    };
+    const after = computeViolations(project, project.plan.assignments, overrides);
+    expect(after.some((item) => item.groupId === "g2")).toBe(false);
+  });
+});
+
+
+===== D:\Software\ied\Lomalistat\src\engine\constraints.ts =====
+
+import type {
+  AssignmentState,
+  GroupOverrides,
+  ProjectData,
+  SkillRequirement,
+  Violation
+} from "../model/types";
+import { listWeeks } from "../model/weeks";
+
+export interface ConstraintFailure {
+  type: "HEADCOUNT" | "SKILL";
+  groupId: string;
+  skillId?: string;
+  required: number;
+  actual: number;
+  missing: number;
+}
+
+export interface GroupCoverageRow {
+  week: number;
+  groupId: string;
+  groupName: string;
+  headcount: {
+    required: number;
+    actual: number;
+    missing: number;
+  };
+  skills: Array<{
+    skillId: string;
+    skillName: string;
+    required: number;
+    actual: number;
+    missing: number;
+  }>;
+}
+
+export function buildDefaultAssignments(project: ProjectData): ProjectData["plan"]["assignments"] {
+  const assignments: ProjectData["plan"]["assignments"] = {};
+  const weeks = listWeeks(project.timeWindow);
+
+  for (const worker of project.workers) {
+    assignments[worker.id] = {};
+    for (const week of weeks) {
+      assignments[worker.id][week] = "WORK";
+    }
+  }
+
+  return assignments;
+}
+
+export function getAssignment(
+  assignments: ProjectData["plan"]["assignments"],
+  workerId: string,
+  week: number
+): AssignmentState {
+  return assignments[workerId]?.[week] ?? "WORK";
+}
+
+function workerHasGroup(project: ProjectData, groupId: string): boolean {
+  return project.groups.some((group) => group.id === groupId);
+}
+
+export function getWorkerEffectiveGroupForWeek(
+  project: ProjectData,
+  assignments: ProjectData["plan"]["assignments"],
+  groupOverrides: GroupOverrides,
+  workerId: string,
+  week: number
+): string | null {
+  const worker = project.workers.find((item) => item.id === workerId);
+  if (!worker) {
+    return null;
+  }
+  if (getAssignment(assignments, workerId, week) !== "WORK") {
+    return null;
+  }
+
+  const overrideGroupId = groupOverrides[workerId]?.[week];
+  if (overrideGroupId && workerHasGroup(project, overrideGroupId)) {
+    return overrideGroupId;
+  }
+
+  return worker.groupId;
+}
+
+export function countWorkersWorkingInGroup(
+  project: ProjectData,
+  assignments: ProjectData["plan"]["assignments"],
+  groupId: string,
+  week: number,
+  groupOverrides: GroupOverrides = project.plan.groupOverrides ?? {}
+): number {
+  let count = 0;
+  for (const worker of project.workers) {
+    const effectiveGroupId = getWorkerEffectiveGroupForWeek(
+      project,
+      assignments,
+      groupOverrides,
+      worker.id,
+      week
+    );
+    if (effectiveGroupId === groupId) {
+      count += 1;
+    }
+  }
+  return count;
+}
+
+export function countWorkersWithSkillWorking(
+  project: ProjectData,
+  assignments: ProjectData["plan"]["assignments"],
+  groupId: string,
+  week: number,
+  skillId: string,
+  groupOverrides: GroupOverrides = project.plan.groupOverrides ?? {}
+): number {
+  let count = 0;
+  for (const worker of project.workers) {
+    if (!worker.skillIds.includes(skillId)) {
+      continue;
+    }
+    const effectiveGroupId = getWorkerEffectiveGroupForWeek(
+      project,
+      assignments,
+      groupOverrides,
+      worker.id,
+      week
+    );
+    if (effectiveGroupId === groupId) {
+      count += 1;
+    }
+  }
+  return count;
+}
+
+function requirementsForGroup(
+  project: ProjectData,
+  groupId: string
+): SkillRequirement[] {
+  return project.skillRequirements
+    .filter((req) => req.groupId === groupId)
+    .sort((a, b) => a.id.localeCompare(b.id));
+}
+
+export function evaluateGroupWeek(
+  project: ProjectData,
+  assignments: ProjectData["plan"]["assignments"],
+  groupId: string,
+  week: number,
+  groupOverrides: GroupOverrides = project.plan.groupOverrides ?? {}
+): { ok: true } | { ok: false; failure: ConstraintFailure } {
+  const group = project.groups.find((item) => item.id === groupId);
+  if (!group) {
+    return { ok: true };
+  }
+
+  const headcountActual = countWorkersWorkingInGroup(project, assignments, groupId, week, groupOverrides);
+  if (headcountActual < group.minHeadcountPerWeek) {
+    return {
+      ok: false,
+      failure: {
+        type: "HEADCOUNT",
+        groupId,
+        required: group.minHeadcountPerWeek,
+        actual: headcountActual,
+        missing: group.minHeadcountPerWeek - headcountActual
+      }
+    };
+  }
+
+  for (const requirement of requirementsForGroup(project, groupId)) {
+    const actual = countWorkersWithSkillWorking(
+      project,
+      assignments,
+      groupId,
+      week,
+      requirement.skillId,
+      groupOverrides
+    );
+    if (actual < requirement.minPerWeek) {
+      return {
+        ok: false,
+        failure: {
+          type: "SKILL",
+          groupId,
+          skillId: requirement.skillId,
+          required: requirement.minPerWeek,
+          actual,
+          missing: requirement.minPerWeek - actual
+        }
+      };
+    }
+  }
+
+  return { ok: true };
+}
+
+export function computeViolations(
+  project: ProjectData,
+  assignments: ProjectData["plan"]["assignments"] = project.plan.assignments,
+  groupOverrides: GroupOverrides = project.plan.groupOverrides ?? {}
+): Violation[] {
+  const violations: Violation[] = [];
+  const weeks = listWeeks(project.timeWindow);
+
+  for (const group of project.groups) {
+    const reqs = requirementsForGroup(project, group.id);
+    for (const week of weeks) {
+      const actualHeadcount = countWorkersWorkingInGroup(
+        project,
+        assignments,
+        group.id,
+        week,
+        groupOverrides
+      );
+      if (actualHeadcount < group.minHeadcountPerWeek) {
+        violations.push({
+          id: `v-${group.id}-${week}-HEADCOUNT`,
+          week,
+          groupId: group.id,
+          type: "HEADCOUNT",
+          required: group.minHeadcountPerWeek,
+          actual: actualHeadcount,
+          missing: group.minHeadcountPerWeek - actualHeadcount
+        });
+      }
+
+      for (const req of reqs) {
+        const actualSkill = countWorkersWithSkillWorking(
+          project,
+          assignments,
+          group.id,
+          week,
+          req.skillId,
+          groupOverrides
+        );
+        if (actualSkill < req.minPerWeek) {
+          violations.push({
+            id: `v-${group.id}-${week}-SKILL-${req.skillId}`,
+            week,
+            groupId: group.id,
+            type: "SKILL",
+            skillId: req.skillId,
+            required: req.minPerWeek,
+            actual: actualSkill,
+            missing: req.minPerWeek - actualSkill
+          });
+        }
+      }
+    }
+  }
+
+  return violations;
+}
+
+export function computeCoverage(
+  project: ProjectData,
+  assignments: ProjectData["plan"]["assignments"] = project.plan.assignments,
+  groupOverrides: GroupOverrides = project.plan.groupOverrides ?? {}
+): GroupCoverageRow[] {
+  const rows: GroupCoverageRow[] = [];
+  const skillNameById = new Map(project.skills.map((skill) => [skill.id, skill.name]));
+  const weeks = listWeeks(project.timeWindow);
+
+  for (const group of project.groups) {
+    const reqs = requirementsForGroup(project, group.id);
+    for (const week of weeks) {
+      const headcountActual = countWorkersWorkingInGroup(
+        project,
+        assignments,
+        group.id,
+        week,
+        groupOverrides
+      );
+      rows.push({
+        week,
+        groupId: group.id,
+        groupName: group.name,
+        headcount: {
+          required: group.minHeadcountPerWeek,
+          actual: headcountActual,
+          missing: Math.max(0, group.minHeadcountPerWeek - headcountActual)
+        },
+        skills: reqs.map((req) => {
+          const actual = countWorkersWithSkillWorking(
+            project,
+            assignments,
+            group.id,
+            week,
+            req.skillId,
+            groupOverrides
+          );
+          return {
+            skillId: req.skillId,
+            skillName: skillNameById.get(req.skillId) ?? req.skillId,
+            required: req.minPerWeek,
+            actual,
+            missing: Math.max(0, req.minPerWeek - actual)
+          };
+        })
+      });
+    }
+  }
+
+  return rows;
+}
+
+
+===== D:\Software\ied\Lomalistat\src\engine\generatePlan.test.ts =====
+
+import { generatePlan, generatePlanWithTransfers } from "./generatePlan";
+import { createFixtureProject } from "../test/fixtureProject";
+import type { ProjectData } from "../model/types";
+
+function stableResult(result: ReturnType<typeof generatePlan>) {
+  return {
+    assignments: result.plan.assignments,
+    groupOverrides: result.plan.groupOverrides,
+    violations: result.violations,
+    unmetRequests: result.unmetRequests
+  };
+}
+
+describe("generatePlan", () => {
+  it("is deterministic for same input", () => {
+    const project = createFixtureProject();
+    const first = generatePlan(structuredClone(project));
+    const second = generatePlan(structuredClone(project));
+    expect(stableResult(first)).toEqual(stableResult(second));
+  });
+
+  it("processes priority 1 before priority 3 when requests conflict", () => {
+    const project = createFixtureProject();
+    project.requests = [
+      {
+        id: "r-high",
+        workerId: "w1",
+        startWeek: 1,
+        endWeek: 1,
+        priority: 1
+      },
+      {
+        id: "r-low",
+        workerId: "w3",
+        startWeek: 1,
+        endWeek: 1,
+        priority: 3
+      }
+    ];
+
+    const result = generatePlan(project);
+
+    expect(result.plan.assignments.w1[1]).toBe("VACATION");
+    expect(result.plan.assignments.w3[1]).toBe("WORK");
+    expect(result.unmetRequests.some((item) => item.requestId === "r-low" && item.week === 1)).toBe(true);
+  });
+
+  it("magic generation is deterministic for same input", () => {
+    const project = createFixtureProject();
+    const first = generatePlanWithTransfers(structuredClone(project));
+    const second = generatePlanWithTransfers(structuredClone(project));
+    expect(stableResult(first)).toEqual(stableResult(second));
+  });
+
+  it("magic generation can grant request by borrowing worker from another group", () => {
+    const project: ProjectData = {
+      schemaVersion: 1,
+      project: {
+        id: "magic-p",
+        name: "Magic test",
+        createdAt: "2026-01-01T00:00:00.000Z",
+        updatedAt: "2026-01-01T00:00:00.000Z"
+      },
+      timeWindow: {
+        year: 2026,
+        startWeek: 1,
+        endWeek: 1
+      },
+      groups: [
+        {
+          id: "ga",
+          name: "Team A",
+          minHeadcountPerWeek: 1
+        },
+        {
+          id: "gb",
+          name: "Team B",
+          minHeadcountPerWeek: 1
+        }
+      ],
+      skills: [{ id: "s1", name: "Skill 1" }],
+      skillRequirements: [
+        {
+          id: "req-ga-s1",
+          groupId: "ga",
+          skillId: "s1",
+          minPerWeek: 1
+        }
+      ],
+      workers: [
+        {
+          id: "wa",
+          name: "A skill",
+          groupId: "ga",
+          skillIds: ["s1"]
+        },
+        {
+          id: "wb1",
+          name: "B skill",
+          groupId: "gb",
+          skillIds: ["s1"]
+        },
+        {
+          id: "wb2",
+          name: "B general",
+          groupId: "gb",
+          skillIds: []
+        }
+      ],
+      requests: [
+        {
+          id: "r1",
+          workerId: "wa",
+          startWeek: 1,
+          endWeek: 1,
+          priority: 1
+        }
+      ],
+      plan: {
+        assignments: {},
+        groupOverrides: {},
+        generatedAt: "2026-01-01T00:00:00.000Z"
+      },
+      violations: [],
+      unmetRequests: []
+    };
+
+    const normal = generatePlan(structuredClone(project));
+    expect(normal.plan.assignments.wa[1]).toBe("WORK");
+    expect(normal.unmetRequests.length).toBeGreaterThan(0);
+
+    const magic = generatePlanWithTransfers(structuredClone(project));
+    expect(magic.plan.assignments.wa[1]).toBe("VACATION");
+    expect(magic.plan.groupOverrides.wb1?.[1]).toBe("ga");
+    expect(magic.unmetRequests).toHaveLength(0);
+    expect(magic.violations).toHaveLength(0);
+  });
+});
+
+
+===== D:\Software\ied\Lomalistat\src\engine\generatePlan.ts =====
+
+import type { ProjectData, UnmetRequest } from "../model/types";
+import { nowIso } from "../model/id";
+import { isWeekInTimeWindow } from "../model/weeks";
+import {
+  buildDefaultAssignments,
+  countWorkersWithSkillWorking,
+  countWorkersWorkingInGroup,
+  type ConstraintFailure,
+  computeViolations,
+  evaluateGroupWeek,
+  getWorkerEffectiveGroupForWeek
+} from "./constraints";
+
+export interface GeneratePlanResult {
+  plan: ProjectData["plan"];
+  violations: ProjectData["violations"];
+  unmetRequests: UnmetRequest[];
+}
+
+interface GeneratePlanOptions {
+  allowTransfers: boolean;
+}
+
+function replaceOverrides(
+  target: ProjectData["plan"]["groupOverrides"],
+  source: ProjectData["plan"]["groupOverrides"]
+): void {
+  for (const key of Object.keys(target)) {
+    delete target[key];
+  }
+  Object.assign(target, source);
+}
+
+function setWorkerOverrideForWeek(
+  overrides: ProjectData["plan"]["groupOverrides"],
+  workerId: string,
+  workerHomeGroupId: string,
+  week: number,
+  targetGroupId: string | null
+): void {
+  if (!targetGroupId || targetGroupId === workerHomeGroupId) {
+    if (overrides[workerId]) {
+      delete overrides[workerId][week];
+      if (Object.keys(overrides[workerId]).length === 0) {
+        delete overrides[workerId];
+      }
+    }
+    return;
+  }
+
+  overrides[workerId] ??= {};
+  overrides[workerId][week] = targetGroupId;
+}
+
+function missingForFailureType(
+  project: ProjectData,
+  assignments: ProjectData["plan"]["assignments"],
+  overrides: ProjectData["plan"]["groupOverrides"],
+  groupId: string,
+  week: number,
+  failure:
+    | {
+        type: "HEADCOUNT";
+        required: number;
+      }
+    | {
+        type: "SKILL";
+        required: number;
+        skillId: string;
+      }
+): number {
+  if (failure.type === "HEADCOUNT") {
+    const actual = countWorkersWorkingInGroup(project, assignments, groupId, week, overrides);
+    return Math.max(0, failure.required - actual);
+  }
+
+  const actual = countWorkersWithSkillWorking(
+    project,
+    assignments,
+    groupId,
+    week,
+    failure.skillId,
+    overrides
+  );
+  return Math.max(0, failure.required - actual);
+}
+
+function pickBestBackfillCandidate(
+  project: ProjectData,
+  assignments: ProjectData["plan"]["assignments"],
+  overrides: ProjectData["plan"]["groupOverrides"],
+  targetGroupId: string,
+  week: number,
+  failure: {
+    type: "HEADCOUNT" | "SKILL";
+    required: number;
+    missing: number;
+    skillId?: string;
+  },
+  excludedWorkerIds: Set<string>
+): { workerId: string } | null {
+  const sortedWorkers = [...project.workers].sort((a, b) => a.id.localeCompare(b.id));
+  let best: { workerId: string; remainingMissing: number } | null = null;
+
+  for (const worker of sortedWorkers) {
+    if (excludedWorkerIds.has(worker.id)) {
+      continue;
+    }
+    if ((assignments[worker.id]?.[week] ?? "WORK") !== "WORK") {
+      continue;
+    }
+
+    const donorGroupId = getWorkerEffectiveGroupForWeek(
+      project,
+      assignments,
+      overrides,
+      worker.id,
+      week
+    );
+    if (!donorGroupId || donorGroupId === targetGroupId) {
+      continue;
+    }
+
+    if (failure.type === "SKILL" && failure.skillId && !worker.skillIds.includes(failure.skillId)) {
+      continue;
+    }
+
+    const trialOverrides = structuredClone(overrides);
+    setWorkerOverrideForWeek(trialOverrides, worker.id, worker.groupId, week, targetGroupId);
+
+    const donorOk = evaluateGroupWeek(project, assignments, donorGroupId, week, trialOverrides);
+    if (!donorOk.ok) {
+      continue;
+    }
+
+    const remainingMissing =
+      failure.type === "HEADCOUNT"
+        ? missingForFailureType(project, assignments, trialOverrides, targetGroupId, week, {
+            type: "HEADCOUNT",
+            required: failure.required
+          })
+        : missingForFailureType(project, assignments, trialOverrides, targetGroupId, week, {
+            type: "SKILL",
+            required: failure.required,
+            skillId: failure.skillId ?? ""
+          });
+
+    if (remainingMissing >= failure.missing) {
+      continue;
+    }
+
+    if (!best || remainingMissing < best.remainingMissing) {
+      best = {
+        workerId: worker.id,
+        remainingMissing
+      };
+    }
+  }
+
+  return best;
+}
+
+function tryAutoBackfillForWeek(
+  project: ProjectData,
+  assignments: ProjectData["plan"]["assignments"],
+  overrides: ProjectData["plan"]["groupOverrides"],
+  targetGroupId: string,
+  week: number,
+  excludedWorkerIds: Set<string>
+): { ok: true } | { ok: false; failure: ConstraintFailure } {
+  const excluded = new Set(excludedWorkerIds);
+
+  for (let i = 0; i < project.workers.length; i += 1) {
+    const validation = evaluateGroupWeek(project, assignments, targetGroupId, week, overrides);
+    if (validation.ok) {
+      return { ok: true };
+    }
+
+    const candidate = pickBestBackfillCandidate(
+      project,
+      assignments,
+      overrides,
+      targetGroupId,
+      week,
+      validation.failure,
+      excluded
+    );
+    if (!candidate) {
+      return { ok: false, failure: validation.failure };
+    }
+
+    const worker = project.workers.find((item) => item.id === candidate.workerId);
+    if (!worker) {
+      return { ok: false, failure: validation.failure };
+    }
+    setWorkerOverrideForWeek(overrides, worker.id, worker.groupId, week, targetGroupId);
+    excluded.add(worker.id);
+  }
+
+  const finalValidation = evaluateGroupWeek(project, assignments, targetGroupId, week, overrides);
+  if (finalValidation.ok) {
+    return { ok: true };
+  }
+
+  return { ok: false, failure: finalValidation.failure };
+}
+
+function runGeneratePlan(project: ProjectData, options: GeneratePlanOptions): GeneratePlanResult {
+  const assignments = buildDefaultAssignments(project);
+  const groupOverrides: ProjectData["plan"]["groupOverrides"] = {};
+  const sortedRequests = [...project.requests].sort((a, b) => {
+    if (a.priority !== b.priority) {
+      return a.priority - b.priority;
+    }
+    return a.id.localeCompare(b.id);
+  });
+  const unmetRequests: UnmetRequest[] = [];
+
+  for (const request of sortedRequests) {
+    const worker = project.workers.find((item) => item.id === request.workerId);
+    if (!worker) {
+      continue;
+    }
+
+    for (let week = request.startWeek; week <= request.endWeek; week += 1) {
+      if (!isWeekInTimeWindow(week, project.timeWindow)) {
+        continue;
+      }
+      if ((assignments[worker.id]?.[week] ?? "WORK") === "VACATION") {
+        continue;
+      }
+
+      const evaluatedGroupId =
+        getWorkerEffectiveGroupForWeek(project, assignments, groupOverrides, worker.id, week) ??
+        worker.groupId;
+      const previousAssignment = assignments[worker.id]?.[week] ?? "WORK";
+      const snapshotOverrides = structuredClone(groupOverrides);
+      assignments[worker.id] ??= {};
+      assignments[worker.id][week] = "VACATION";
+      setWorkerOverrideForWeek(groupOverrides, worker.id, worker.groupId, week, null);
+
+      let validation = evaluateGroupWeek(project, assignments, evaluatedGroupId, week, groupOverrides);
+
+      if (!validation.ok && options.allowTransfers) {
+        const transferResult = tryAutoBackfillForWeek(
+          project,
+          assignments,
+          groupOverrides,
+          evaluatedGroupId,
+          week,
+          new Set([worker.id])
+        );
+        if (transferResult.ok) {
+          continue;
+        }
+        validation = {
+          ok: false,
+          failure: transferResult.failure
+        };
+      }
+
+      if (validation.ok) {
+        continue;
+      }
+
+      assignments[worker.id][week] = previousAssignment;
+      replaceOverrides(groupOverrides, snapshotOverrides);
+      unmetRequests.push({
+        id: `ur-${request.id}-${week}`,
+        requestId: request.id,
+        workerId: request.workerId,
+        week,
+        reasonType: validation.failure.type,
+        groupId: validation.failure.groupId,
+        skillId: validation.failure.skillId,
+        required: validation.failure.required,
+        actual: validation.failure.actual,
+        missing: validation.failure.missing
+      });
+    }
+  }
+
+  const plan: ProjectData["plan"] = {
+    assignments,
+    groupOverrides,
+    generatedAt: nowIso()
+  };
+
+  const violations = computeViolations(project, assignments, groupOverrides);
+  return {
+    plan,
+    violations,
+    unmetRequests
+  };
+}
+
+export function generatePlan(project: ProjectData): GeneratePlanResult {
+  return runGeneratePlan(project, { allowTransfers: false });
+}
+
+export function generatePlanWithTransfers(project: ProjectData): GeneratePlanResult {
+  return runGeneratePlan(project, { allowTransfers: true });
+}
+
+
+===== D:\Software\ied\Lomalistat\src\engine\recalc.ts =====
+
+import type { ProjectData, UnmetRequest } from "../model/types";
+import { isWeekInTimeWindow } from "../model/weeks";
+import {
+  computeViolations,
+  evaluateGroupWeek,
+  getWorkerEffectiveGroupForWeek
+} from "./constraints";
+
+function recomputeUnmetRequests(
+  project: ProjectData,
+  assignments: ProjectData["plan"]["assignments"],
+  groupOverrides: ProjectData["plan"]["groupOverrides"]
+): UnmetRequest[] {
+  const unmetRequests: UnmetRequest[] = [];
+  const sortedRequests = [...project.requests].sort((a, b) => {
+    if (a.priority !== b.priority) {
+      return a.priority - b.priority;
+    }
+    return a.id.localeCompare(b.id);
+  });
+
+  for (const request of sortedRequests) {
+    const worker = project.workers.find((item) => item.id === request.workerId);
+    if (!worker) {
+      continue;
+    }
+    const workerAssignments = assignments[worker.id] ?? {};
+    assignments[worker.id] = workerAssignments;
+
+    for (let week = request.startWeek; week <= request.endWeek; week += 1) {
+      if (!isWeekInTimeWindow(week, project.timeWindow)) {
+        continue;
+      }
+      if (workerAssignments[week] === "VACATION") {
+        continue;
+      }
+
+      const previous = workerAssignments[week] ?? "WORK";
+      workerAssignments[week] = "VACATION";
+      const evaluatedGroupId =
+        getWorkerEffectiveGroupForWeek(project, assignments, groupOverrides, worker.id, week) ??
+        worker.groupId;
+      const result = evaluateGroupWeek(project, assignments, evaluatedGroupId, week, groupOverrides);
+      workerAssignments[week] = previous;
+      if (result.ok) {
+        continue;
+      }
+
+      unmetRequests.push({
+        id: `ur-${request.id}-${week}`,
+        requestId: request.id,
+        workerId: request.workerId,
+        week,
+        reasonType: result.failure.type,
+        groupId: result.failure.groupId,
+        skillId: result.failure.skillId,
+        required: result.failure.required,
+        actual: result.failure.actual,
+        missing: result.failure.missing
+      });
+    }
+  }
+
+  return unmetRequests;
+}
+
+export function recalculateDerived(project: ProjectData): {
+  violations: ProjectData["violations"];
+  unmetRequests: ProjectData["unmetRequests"];
+} {
+  const assignments = project.plan.assignments;
+  const groupOverrides = project.plan.groupOverrides ?? {};
+  return {
+    violations: computeViolations(project, assignments, groupOverrides),
+    unmetRequests: recomputeUnmetRequests(project, assignments, groupOverrides)
+  };
+}
+
+
+===== D:\Software\ied\Lomalistat\src\lib\utils.ts =====
+
+import { type ClassValue, clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
+
+export function cn(...inputs: ClassValue[]): string {
+  return twMerge(clsx(inputs));
+}
+
+export function debounce<T extends (...args: Parameters<T>) => void>(fn: T, waitMs: number) {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  return (...args: Parameters<T>) => {
+    if (timer) {
+      clearTimeout(timer);
+    }
+    timer = setTimeout(() => fn(...args), waitMs);
+  };
+}
+
+export function downloadTextFile(filename: string, content: string): void {
+  const blob = new Blob([content], { type: "application/json;charset=utf-8" });
+  downloadBlobFile(filename, blob);
+}
+
+export function downloadBlobFile(filename: string, blob: Blob): void {
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = filename;
+  anchor.click();
+  URL.revokeObjectURL(url);
+}
+
+export type PickerAcceptType = {
+  description: string;
+  mimeType: string;
+  extensions: string[];
+};
+
+type SaveWritable = {
+  write: (data: Blob) => Promise<void>;
+  close: () => Promise<void>;
+};
+
+export type SaveFileHandle = {
+  name?: string;
+  createWritable: () => Promise<SaveWritable>;
+};
+
+type SavePickerWindow = Window & {
+  showSaveFilePicker?: (options?: {
+    suggestedName?: string;
+    types?: Array<{
+      description: string;
+      accept: Record<string, string[]>;
+    }>;
+  }) => Promise<SaveFileHandle>;
+};
+
+function isAbortError(error: unknown): boolean {
+  return error instanceof DOMException && error.name === "AbortError";
+}
+
+function pickerTypesFromAccept(acceptType?: PickerAcceptType) {
+  if (!acceptType) {
+    return undefined;
+  }
+  return [
+    {
+      description: acceptType.description,
+      accept: {
+        [acceptType.mimeType]: acceptType.extensions
+      }
+    }
+  ];
+}
+
+export function isSavePickerSupported(): boolean {
+  return Boolean((window as SavePickerWindow).showSaveFilePicker);
+}
+
+export async function pickSaveFileHandle(
+  filename: string,
+  acceptType?: PickerAcceptType
+): Promise<SaveFileHandle | null> {
+  const picker = (window as SavePickerWindow).showSaveFilePicker;
+  if (!picker) {
+    return null;
+  }
+
+  try {
+    const handle = await picker({
+      suggestedName: filename,
+      types: pickerTypesFromAccept(acceptType)
+    });
+    return handle;
+  } catch (error) {
+    if (isAbortError(error)) {
+      return null;
+    }
+    throw error;
+  }
+}
+
+export async function writeBlobToFileHandle(handle: SaveFileHandle, blob: Blob): Promise<void> {
+  const writable = await handle.createWritable();
+  await writable.write(blob);
+  await writable.close();
+}
+
+export async function writeTextToFileHandle(
+  handle: SaveFileHandle,
+  content: string,
+  mimeType = "application/json;charset=utf-8"
+): Promise<void> {
+  await writeBlobToFileHandle(handle, new Blob([content], { type: mimeType }));
+}
+
+export async function saveBlobFileWithDialog(
+  filename: string,
+  blob: Blob,
+  acceptType?: PickerAcceptType
+): Promise<void> {
+  const handle = await pickSaveFileHandle(filename, acceptType);
+  if (!handle) {
+    if (!isSavePickerSupported()) {
+      downloadBlobFile(filename, blob);
+    }
+    return;
+  }
+
+  try {
+    await writeBlobToFileHandle(handle, blob);
+  } catch (error) {
+    if (isAbortError(error)) {
+      return;
+    }
+    throw error;
+  }
+}
+
+export async function saveTextFileWithDialog(
+  filename: string,
+  content: string,
+  acceptType?: PickerAcceptType
+): Promise<void> {
+  const blob = new Blob([content], { type: "application/json;charset=utf-8" });
+  await saveBlobFileWithDialog(filename, blob, acceptType);
+}
+
+
+===== D:\Software\ied\Lomalistat\src\model\factory.ts =====
+
+import { createId, nowIso } from "./id";
+import type { ProjectData } from "./types";
+import { normalizeTimeWindow } from "./weeks";
+
+export function createEmptyProject(
+  name: string,
+  year: number,
+  startWeek: number,
+  endWeek: number
+): ProjectData {
+  const now = nowIso();
+  return {
+    schemaVersion: 1,
+    project: {
+      id: createId("project"),
+      name: name.trim() || "Uusi projekti",
+      createdAt: now,
+      updatedAt: now
+    },
+    timeWindow: normalizeTimeWindow({
+      year,
+      startWeek,
+      endWeek
+    }),
+    groups: [],
+    skills: [],
+    skillRequirements: [],
+    workers: [],
+    requests: [],
+    plan: {
+      assignments: {},
+      groupOverrides: {},
+      generatedAt: now
+    },
+    violations: [],
+    unmetRequests: []
+  };
+}
+
+
+===== D:\Software\ied\Lomalistat\src\model\id.ts =====
+
+let seq = 0;
+
+export function createId(prefix: string): string {
+  seq += 1;
+  return `${prefix}-${Date.now().toString(36)}-${seq.toString(36)}`;
+}
+
+export function nowIso(): string {
+  return new Date().toISOString();
+}
+
+
+
+===== D:\Software\ied\Lomalistat\src\model\migrations.ts =====
+
+import type { ProjectData } from "./types";
+import { nowIso } from "./id";
+import { normalizeTimeWindow } from "./weeks";
+
+function asRecord(input: unknown): Record<string, unknown> | null {
+  if (typeof input !== "object" || input === null || Array.isArray(input)) {
+    return null;
+  }
+  return input as Record<string, unknown>;
+}
+
+function asString(value: unknown, fallback: string): string {
+  if (typeof value === "string" && value.trim()) {
+    return value;
+  }
+  return fallback;
+}
+
+function asNumber(value: unknown, fallback: number): number {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+  return fallback;
+}
+
+export function migrateToV1(input: unknown): ProjectData {
+  const now = nowIso();
+  const source = asRecord(input);
+  if (!source) {
+    throw new Error("Imported JSON is not an object.");
+  }
+
+  if (source.schemaVersion !== undefined && source.schemaVersion !== 1) {
+    throw new Error(`Unsupported schemaVersion: ${String(source.schemaVersion)}`);
+  }
+
+  const projectSource = asRecord(source.project) ?? {};
+  const timeWindowSource = asRecord(source.timeWindow) ?? {};
+  const planSource = asRecord(source.plan) ?? {};
+
+  return {
+    schemaVersion: 1,
+    project: {
+      id: asString(projectSource.id, `import-${Date.now().toString(36)}`),
+      name: asString(projectSource.name, "Tuotu projekti"),
+      createdAt: asString(projectSource.createdAt, now),
+      updatedAt: asString(projectSource.updatedAt, now)
+    },
+    timeWindow: normalizeTimeWindow({
+      year: asNumber(timeWindowSource.year, new Date().getFullYear()),
+      startWeek: asNumber(timeWindowSource.startWeek, 1),
+      endWeek: asNumber(timeWindowSource.endWeek, 52),
+      includeMonths: Array.isArray(timeWindowSource.includeMonths)
+        ? timeWindowSource.includeMonths
+            .map((item) => asNumber(item, 0))
+            .filter((month) => month >= 1 && month <= 12)
+        : undefined
+    }),
+    groups: Array.isArray(source.groups) ? (source.groups as ProjectData["groups"]) : [],
+    skills: Array.isArray(source.skills) ? (source.skills as ProjectData["skills"]) : [],
+    skillRequirements: Array.isArray(source.skillRequirements)
+      ? (source.skillRequirements as ProjectData["skillRequirements"])
+      : [],
+    workers: Array.isArray(source.workers) ? (source.workers as ProjectData["workers"]) : [],
+    requests: Array.isArray(source.requests) ? (source.requests as ProjectData["requests"]) : [],
+    plan: {
+      assignments:
+        typeof planSource.assignments === "object" && planSource.assignments !== null
+          ? (planSource.assignments as ProjectData["plan"]["assignments"])
+          : {},
+      groupOverrides:
+        typeof planSource.groupOverrides === "object" && planSource.groupOverrides !== null
+          ? (planSource.groupOverrides as ProjectData["plan"]["groupOverrides"])
+          : {},
+      generatedAt: asString(planSource.generatedAt, now),
+      notes: typeof planSource.notes === "string" ? planSource.notes : undefined
+    },
+    violations: Array.isArray(source.violations)
+      ? (source.violations as ProjectData["violations"])
+      : [],
+    unmetRequests: Array.isArray(source.unmetRequests)
+      ? (source.unmetRequests as ProjectData["unmetRequests"])
+      : []
+  };
+}
+
+
+===== D:\Software\ied\Lomalistat\src\model\types.ts =====
+
+export type SchemaVersion = 1;
+export type AssignmentState = "WORK" | "VACATION";
+export type Priority = 1 | 2 | 3;
+export type GroupOverrides = Record<string, Record<number, string>>;
+
+export interface ProjectMeta {
+  id: string;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TimeWindow {
+  year: number;
+  startWeek: number;
+  endWeek: number;
+  includeMonths?: number[];
+}
+
+export interface Group {
+  id: string;
+  name: string;
+  minHeadcountPerWeek: number;
+}
+
+export interface Skill {
+  id: string;
+  name: string;
+}
+
+export interface SkillRequirement {
+  id: string;
+  groupId: string;
+  skillId: string;
+  minPerWeek: number;
+}
+
+export interface Worker {
+  id: string;
+  name: string;
+  groupId: string;
+  skillIds: string[];
+}
+
+export interface VacationRequest {
+  id: string;
+  workerId: string;
+  startWeek: number;
+  endWeek: number;
+  priority: Priority;
+}
+
+export interface Plan {
+  assignments: Record<string, Record<number, AssignmentState>>;
+  groupOverrides: GroupOverrides;
+  generatedAt: string;
+  notes?: string;
+}
+
+export interface Violation {
+  id: string;
+  week: number;
+  groupId: string;
+  type: "HEADCOUNT" | "SKILL";
+  skillId?: string;
+  required: number;
+  actual: number;
+  missing: number;
+}
+
+export interface UnmetRequest {
+  id: string;
+  requestId: string;
+  workerId: string;
+  week: number;
+  reasonType: "HEADCOUNT" | "SKILL";
+  groupId: string;
+  skillId?: string;
+  required: number;
+  actual: number;
+  missing: number;
+}
+
+export interface ProjectData {
+  schemaVersion: SchemaVersion;
+  project: ProjectMeta;
+  timeWindow: TimeWindow;
+  groups: Group[];
+  skills: Skill[];
+  skillRequirements: SkillRequirement[];
+  workers: Worker[];
+  requests: VacationRequest[];
+  plan: Plan;
+  violations: Violation[];
+  unmetRequests: UnmetRequest[];
+}
+
+
+===== D:\Software\ied\Lomalistat\src\model\validation.ts =====
+
+import type { ProjectData } from "./types";
+
+interface ValidationResult {
+  valid: boolean;
+  errors: string[];
+  value?: ProjectData;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function isString(value: unknown): value is string {
+  return typeof value === "string";
+}
+
+function isFiniteNumber(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value);
+}
+
+function isStringArray(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every(isString);
+}
+
+export function validateProjectV1(input: unknown): ValidationResult {
+  const errors: string[] = [];
+  if (!isRecord(input)) {
+    return { valid: false, errors: ["JSON root must be an object."] };
+  }
+
+  if (input.schemaVersion !== 1) {
+    errors.push("schemaVersion must be 1.");
+  }
+
+  const project = input.project;
+  if (!isRecord(project)) {
+    errors.push("project must be an object.");
+  } else {
+    if (!isString(project.id) || !project.id.trim()) {
+      errors.push("project.id must be a non-empty string.");
+    }
+    if (!isString(project.name) || !project.name.trim()) {
+      errors.push("project.name must be a non-empty string.");
+    }
+    if (!isString(project.createdAt)) {
+      errors.push("project.createdAt must be a string.");
+    }
+    if (!isString(project.updatedAt)) {
+      errors.push("project.updatedAt must be a string.");
+    }
+  }
+
+  const timeWindow = input.timeWindow;
+  if (!isRecord(timeWindow)) {
+    errors.push("timeWindow must be an object.");
+  } else {
+    if (!isFiniteNumber(timeWindow.year)) {
+      errors.push("timeWindow.year must be a number.");
+    }
+    if (!isFiniteNumber(timeWindow.startWeek)) {
+      errors.push("timeWindow.startWeek must be a number.");
+    }
+    if (!isFiniteNumber(timeWindow.endWeek)) {
+      errors.push("timeWindow.endWeek must be a number.");
+    }
+    if (
+      timeWindow.includeMonths !== undefined &&
+      (!Array.isArray(timeWindow.includeMonths) ||
+        !timeWindow.includeMonths.every((month) => isFiniteNumber(month)))
+    ) {
+      errors.push("timeWindow.includeMonths must be an array of numbers.");
+    }
+  }
+
+  const groups = input.groups;
+  if (!Array.isArray(groups)) {
+    errors.push("groups must be an array.");
+  } else {
+    groups.forEach((group, idx) => {
+      if (!isRecord(group)) {
+        errors.push(`groups[${idx}] must be an object.`);
+        return;
+      }
+      if (!isString(group.id) || !group.id.trim()) {
+        errors.push(`groups[${idx}].id must be a non-empty string.`);
+      }
+      if (!isString(group.name) || !group.name.trim()) {
+        errors.push(`groups[${idx}].name must be a non-empty string.`);
+      }
+      if (!isFiniteNumber(group.minHeadcountPerWeek)) {
+        errors.push(`groups[${idx}].minHeadcountPerWeek must be a number.`);
+      }
+    });
+  }
+
+  const skills = input.skills;
+  if (!Array.isArray(skills)) {
+    errors.push("skills must be an array.");
+  } else {
+    skills.forEach((skill, idx) => {
+      if (!isRecord(skill)) {
+        errors.push(`skills[${idx}] must be an object.`);
+        return;
+      }
+      if (!isString(skill.id) || !skill.id.trim()) {
+        errors.push(`skills[${idx}].id must be a non-empty string.`);
+      }
+      if (!isString(skill.name) || !skill.name.trim()) {
+        errors.push(`skills[${idx}].name must be a non-empty string.`);
+      }
+    });
+  }
+
+  const requirements = input.skillRequirements;
+  if (!Array.isArray(requirements)) {
+    errors.push("skillRequirements must be an array.");
+  } else {
+    requirements.forEach((req, idx) => {
+      if (!isRecord(req)) {
+        errors.push(`skillRequirements[${idx}] must be an object.`);
+        return;
+      }
+      if (!isString(req.id) || !req.id.trim()) {
+        errors.push(`skillRequirements[${idx}].id must be a non-empty string.`);
+      }
+      if (!isString(req.groupId) || !req.groupId.trim()) {
+        errors.push(`skillRequirements[${idx}].groupId must be a non-empty string.`);
+      }
+      if (!isString(req.skillId) || !req.skillId.trim()) {
+        errors.push(`skillRequirements[${idx}].skillId must be a non-empty string.`);
+      }
+      if (!isFiniteNumber(req.minPerWeek)) {
+        errors.push(`skillRequirements[${idx}].minPerWeek must be a number.`);
+      }
+    });
+  }
+
+  const workers = input.workers;
+  if (!Array.isArray(workers)) {
+    errors.push("workers must be an array.");
+  } else {
+    workers.forEach((worker, idx) => {
+      if (!isRecord(worker)) {
+        errors.push(`workers[${idx}] must be an object.`);
+        return;
+      }
+      if (!isString(worker.id) || !worker.id.trim()) {
+        errors.push(`workers[${idx}].id must be a non-empty string.`);
+      }
+      if (!isString(worker.name) || !worker.name.trim()) {
+        errors.push(`workers[${idx}].name must be a non-empty string.`);
+      }
+      if (!isString(worker.groupId) || !worker.groupId.trim()) {
+        errors.push(`workers[${idx}].groupId must be a non-empty string.`);
+      }
+      if (!isStringArray(worker.skillIds)) {
+        errors.push(`workers[${idx}].skillIds must be an array of strings.`);
+      }
+    });
+  }
+
+  const requests = input.requests;
+  if (!Array.isArray(requests)) {
+    errors.push("requests must be an array.");
+  } else {
+    requests.forEach((request, idx) => {
+      if (!isRecord(request)) {
+        errors.push(`requests[${idx}] must be an object.`);
+        return;
+      }
+      if (!isString(request.id) || !request.id.trim()) {
+        errors.push(`requests[${idx}].id must be a non-empty string.`);
+      }
+      if (!isString(request.workerId) || !request.workerId.trim()) {
+        errors.push(`requests[${idx}].workerId must be a non-empty string.`);
+      }
+      if (!isFiniteNumber(request.startWeek)) {
+        errors.push(`requests[${idx}].startWeek must be a number.`);
+      }
+      if (!isFiniteNumber(request.endWeek)) {
+        errors.push(`requests[${idx}].endWeek must be a number.`);
+      }
+      if (![1, 2, 3].includes(Number(request.priority))) {
+        errors.push(`requests[${idx}].priority must be 1, 2, or 3.`);
+      }
+    });
+  }
+
+  const plan = input.plan;
+  if (!isRecord(plan)) {
+    errors.push("plan must be an object.");
+  } else {
+    if (!isRecord(plan.assignments)) {
+      errors.push("plan.assignments must be an object.");
+    }
+    if (!isRecord(plan.groupOverrides)) {
+      errors.push("plan.groupOverrides must be an object.");
+    } else {
+      for (const [workerId, weekMap] of Object.entries(plan.groupOverrides)) {
+        if (!workerId.trim()) {
+          errors.push("plan.groupOverrides has an empty worker id key.");
+          continue;
+        }
+        if (!isRecord(weekMap)) {
+          errors.push(`plan.groupOverrides.${workerId} must be an object.`);
+          continue;
+        }
+        for (const [weekKey, groupId] of Object.entries(weekMap)) {
+          if (!/^\d+$/.test(weekKey)) {
+            errors.push(`plan.groupOverrides.${workerId}.${weekKey} week must be numeric.`);
+          }
+          if (!isString(groupId) || !groupId.trim()) {
+            errors.push(`plan.groupOverrides.${workerId}.${weekKey} must be a non-empty group id.`);
+          }
+        }
+      }
+    }
+    if (!isString(plan.generatedAt)) {
+      errors.push("plan.generatedAt must be a string.");
+    }
+  }
+
+  if (!Array.isArray(input.violations)) {
+    errors.push("violations must be an array.");
+  }
+  if (!Array.isArray(input.unmetRequests)) {
+    errors.push("unmetRequests must be an array.");
+  }
+
+  if (errors.length > 0) {
+    return { valid: false, errors };
+  }
+
+  return {
+    valid: true,
+    errors: [],
+    value: input as unknown as ProjectData
+  };
+}
+
+
+===== D:\Software\ied\Lomalistat\src\model\weeks.ts =====
+
+import type { TimeWindow } from "./types";
+
+export function clampWeek(week: number): number {
+  if (!Number.isFinite(week)) {
+    return 1;
+  }
+  return Math.min(53, Math.max(1, Math.trunc(week)));
+}
+
+export function normalizeTimeWindow(timeWindow: TimeWindow): TimeWindow {
+  const startWeek = clampWeek(timeWindow.startWeek);
+  const endWeek = clampWeek(timeWindow.endWeek);
+  return {
+    ...timeWindow,
+    startWeek: Math.min(startWeek, endWeek),
+    endWeek: Math.max(startWeek, endWeek)
+  };
+}
+
+export function listWeeks(timeWindow: TimeWindow): number[] {
+  const normalized = normalizeTimeWindow(timeWindow);
+  const weeks: number[] = [];
+  for (let week = normalized.startWeek; week <= normalized.endWeek; week += 1) {
+    weeks.push(week);
+  }
+  return weeks;
+}
+
+export function weekCount(timeWindow: TimeWindow): number {
+  return listWeeks(timeWindow).length;
+}
+
+export function isWeekInTimeWindow(week: number, timeWindow: TimeWindow): boolean {
+  const normalized = normalizeTimeWindow(timeWindow);
+  return week >= normalized.startWeek && week <= normalized.endWeek;
+}
+
+
+
+===== D:\Software\ied\Lomalistat\src\repository\IndexedDBRepo.ts =====
+
+import Dexie, { type Table } from "dexie";
+import type { ProjectData } from "../model/types";
+import type { ProjectRepository } from "./ProjectRepository";
+
+interface ProjectRecord {
+  id: string;
+  updatedAt: string;
+  payload: ProjectData;
+}
+
+class LocalDb extends Dexie {
+  projects!: Table<ProjectRecord, string>;
+
+  constructor() {
+    super("lomalistat-db");
+    this.version(1).stores({
+      projects: "&id, updatedAt"
+    });
+  }
+}
+
+const db = new LocalDb();
+
+export class IndexedDBRepo implements ProjectRepository {
+  async loadProject(): Promise<ProjectData | null> {
+    const latest = await db.projects.orderBy("updatedAt").last();
+    return latest?.payload ?? null;
+  }
+
+  async saveProject(project: ProjectData): Promise<void> {
+    await db.projects.put({
+      id: project.project.id,
+      updatedAt: project.project.updatedAt,
+      payload: project
+    });
+  }
+
+  async clear(): Promise<void> {
+    await db.delete();
+    await db.open();
+  }
+}
+
+
+===== D:\Software\ied\Lomalistat\src\repository\InMemoryRepo.ts =====
+
+import type { ProjectData } from "../model/types";
+import type { ProjectRepository } from "./ProjectRepository";
+
+export class InMemoryRepo implements ProjectRepository {
+  private project: ProjectData | null = null;
+
+  async loadProject(): Promise<ProjectData | null> {
+    return this.project ? structuredClone(this.project) : null;
+  }
+
+  async saveProject(project: ProjectData): Promise<void> {
+    this.project = structuredClone(project);
+  }
+
+  async clear(): Promise<void> {
+    this.project = null;
+  }
+}
+
+
+
+===== D:\Software\ied\Lomalistat\src\repository\ProjectRepository.ts =====
+
+import type { ProjectData } from "../model/types";
+
+export interface ProjectRepository {
+  loadProject(): Promise<ProjectData | null>;
+  saveProject(project: ProjectData): Promise<void>;
+  clear(): Promise<void>;
+}
+
+
+
+===== D:\Software\ied\Lomalistat\src\test\fixtureProject.ts =====
+
+import type { ProjectData } from "../model/types";
+
+export function createFixtureProject(): ProjectData {
+  return {
+    schemaVersion: 1,
+    project: {
+      id: "fixture-project",
+      name: "Fixture",
+      createdAt: "2026-01-01T00:00:00.000Z",
+      updatedAt: "2026-01-01T00:00:00.000Z"
+    },
+    timeWindow: {
+      year: 2026,
+      startWeek: 1,
+      endWeek: 4
+    },
+    groups: [
+      {
+        id: "g1",
+        name: "Group 1",
+        minHeadcountPerWeek: 2
+      }
+    ],
+    skills: [
+      { id: "s1", name: "Skill 1" },
+      { id: "s2", name: "Skill 2" }
+    ],
+    skillRequirements: [
+      {
+        id: "sr1",
+        groupId: "g1",
+        skillId: "s1",
+        minPerWeek: 1
+      }
+    ],
+    workers: [
+      {
+        id: "w1",
+        name: "Worker 1",
+        groupId: "g1",
+        skillIds: ["s1"]
+      },
+      {
+        id: "w2",
+        name: "Worker 2",
+        groupId: "g1",
+        skillIds: ["s2"]
+      },
+      {
+        id: "w3",
+        name: "Worker 3",
+        groupId: "g1",
+        skillIds: ["s1", "s2"]
+      }
+    ],
+    requests: [
+      {
+        id: "r1",
+        workerId: "w1",
+        startWeek: 1,
+        endWeek: 2,
+        priority: 3
+      },
+      {
+        id: "r2",
+        workerId: "w2",
+        startWeek: 2,
+        endWeek: 3,
+        priority: 2
+      },
+      {
+        id: "r3",
+        workerId: "w3",
+        startWeek: 3,
+        endWeek: 4,
+        priority: 1
+      }
+    ],
+    plan: {
+      assignments: {},
+      groupOverrides: {},
+      generatedAt: "2026-01-01T00:00:00.000Z"
+    },
+    violations: [],
+    unmetRequests: []
+  };
+}
+
+
+===== D:\Software\ied\Lomalistat\src\view\components\PlannerGrid.tsx =====
+
+import { ChevronDown, ChevronRight } from "lucide-react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import type { ProjectData } from "../../model/types";
+import {
+  countWorkersWorkingInGroup,
+  getWorkerEffectiveGroupForWeek
+} from "../../engine/constraints";
+import { listWeeks } from "../../model/weeks";
+import { cn } from "../../lib/utils";
+import { Button } from "../../components/ui/button";
+import { Select } from "../../components/ui/select";
+import { Table, TableWrapper, Td, Th } from "../../components/ui/table";
+
+interface PlannerGridProps {
+  project: ProjectData;
+  onToggle: (workerId: string, week: number) => void;
+  onSetGroupOverride: (workerId: string, week: number, groupId: string | null) => void;
+  selectedWorkerId: string | null;
+  onSelectWorker: (workerId: string) => void;
+}
+
+interface GroupOverrideDialogState {
+  workerId: string;
+  week: number;
+  selectedGroupId: string;
+}
+
+export function PlannerGrid({
+  project,
+  onToggle,
+  onSetGroupOverride,
+  selectedWorkerId,
+  onSelectWorker
+}: PlannerGridProps) {
+  const weeks = useMemo(() => listWeeks(project.timeWindow), [project.timeWindow]);
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+  const [overrideDialog, setOverrideDialog] = useState<GroupOverrideDialogState | null>(null);
+  const clickTimeouts = useRef<Record<string, number>>({});
+  const groupMap = useMemo(
+    () => new Map(project.groups.map((group) => [group.id, group.name])),
+    [project.groups]
+  );
+  const violationWeeks = useMemo(() => {
+    const set = new Set<number>();
+    for (const violation of project.violations) {
+      set.add(violation.week);
+    }
+    return set;
+  }, [project.violations]);
+
+  useEffect(() => {
+    const timeouts = clickTimeouts.current;
+    return () => {
+      for (const timeoutId of Object.values(timeouts)) {
+        window.clearTimeout(timeoutId);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!overrideDialog) {
+      return;
+    }
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setOverrideDialog(null);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [overrideDialog]);
+
+  const chooseOverrideGroup = (workerId: string, week: number) => {
+    const worker = project.workers.find((item) => item.id === workerId);
+    if (!worker) {
+      return;
+    }
+    const assignment = project.plan.assignments[workerId]?.[week] ?? "WORK";
+    if (assignment !== "WORK") {
+      return;
+    }
+    const currentGroupId =
+      getWorkerEffectiveGroupForWeek(
+        project,
+        project.plan.assignments,
+        project.plan.groupOverrides ?? {},
+        workerId,
+        week
+      ) ?? worker.groupId;
+    setOverrideDialog({
+      workerId,
+      week,
+      selectedGroupId: currentGroupId
+    });
+  };
+
+  const handleCellClick = (workerId: string, week: number) => {
+    const key = `${workerId}-${week}`;
+    const existing = clickTimeouts.current[key];
+    if (existing) {
+      window.clearTimeout(existing);
+      delete clickTimeouts.current[key];
+      chooseOverrideGroup(workerId, week);
+      return;
+    }
+
+    clickTimeouts.current[key] = window.setTimeout(() => {
+      onToggle(workerId, week);
+      delete clickTimeouts.current[key];
+    }, 220);
+  };
+
+  const dialogWorker = overrideDialog
+    ? project.workers.find((item) => item.id === overrideDialog.workerId) ?? null
+    : null;
+  const dialogWeek = overrideDialog?.week ?? null;
+  const dialogHomeGroupId = dialogWorker?.groupId ?? null;
+
+  const applyOverrideDialog = () => {
+    if (!overrideDialog || !dialogWorker) {
+      return;
+    }
+    const selected = overrideDialog.selectedGroupId;
+    onSetGroupOverride(
+      overrideDialog.workerId,
+      overrideDialog.week,
+      selected === dialogWorker.groupId ? null : selected
+    );
+    setOverrideDialog(null);
+  };
+
+  return (
+    <>
+      <TableWrapper className="max-h-[70vh]">
+        <Table>
+          <thead className="sticky top-0 z-20">
+            <tr>
+              <Th className="sticky left-0 z-30 min-w-64 bg-slate-200">Worker</Th>
+              {weeks.map((week) => (
+                <Th
+                  key={week}
+                  className={cn(
+                    "min-w-14 text-center",
+                    violationWeeks.has(week) && "bg-red-100 text-red-800"
+                  )}
+                >
+                  W{week}
+                </Th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {project.groups.map((group) => {
+              const isCollapsed = collapsed[group.id] ?? false;
+              const workers = project.workers.filter((worker) => worker.groupId === group.id);
+              return (
+                <Fragment key={group.id}>
+                  <tr>
+                    <Td className="sticky left-0 z-10 bg-slate-100 font-semibold">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setCollapsed((prev) => ({ ...prev, [group.id]: !(prev[group.id] ?? false) }))
+                        }
+                        className="flex items-center gap-1"
+                      >
+                        {isCollapsed ? <ChevronRight size={14} /> : <ChevronDown size={14} />}
+                        {group.name} ({workers.length})
+                      </button>
+                    </Td>
+                    {weeks.map((week) => (
+                      <Td key={`${group.id}-${week}`} className="bg-slate-50 text-center text-xs text-slate-500">
+                        {countWorkersWorkingInGroup(
+                          project,
+                          project.plan.assignments,
+                          group.id,
+                          week,
+                          project.plan.groupOverrides ?? {}
+                        )}
+                      </Td>
+                    ))}
+                  </tr>
+
+                  {!isCollapsed &&
+                    workers.map((worker) => (
+                      <tr key={worker.id} className={cn(selectedWorkerId === worker.id && "bg-sky-50")}>
+                        <Td
+                          className={cn(
+                            "sticky left-0 z-10 bg-white",
+                            selectedWorkerId === worker.id && "bg-sky-100"
+                          )}
+                        >
+                          <button
+                            type="button"
+                            onClick={() => onSelectWorker(worker.id)}
+                            className="flex w-full items-center justify-between gap-2 rounded-md px-1 py-0.5 text-left hover:bg-slate-100"
+                          >
+                            <span className="truncate">{worker.name}</span>
+                            <span className="text-xs text-muted-foreground">{worker.skillIds.length} skills</span>
+                          </button>
+                        </Td>
+                        {weeks.map((week) => {
+                          const value = project.plan.assignments[worker.id]?.[week] ?? "WORK";
+                          const effectiveGroupId =
+                            value === "WORK"
+                              ? getWorkerEffectiveGroupForWeek(
+                                  project,
+                                  project.plan.assignments,
+                                  project.plan.groupOverrides ?? {},
+                                  worker.id,
+                                  week
+                                )
+                              : null;
+                          const inLoanGroup = effectiveGroupId && effectiveGroupId !== worker.groupId;
+                          const loanGroupName = inLoanGroup
+                            ? groupMap.get(effectiveGroupId) ?? effectiveGroupId
+                            : null;
+                          return (
+                            <Td key={`${worker.id}-${week}`} className="p-1">
+                              <button
+                                type="button"
+                                onClick={() => handleCellClick(worker.id, week)}
+                                title={
+                                  value === "WORK"
+                                    ? "Click: WORK/VACATION, Double-click: assign team for this week"
+                                    : "Click to switch VACATION -> WORK"
+                                }
+                                className={cn(
+                                  "h-8 w-full rounded-lg px-1 text-[10px] font-semibold leading-tight transition",
+                                  value === "WORK"
+                                    ? "bg-emerald-100 text-emerald-900 hover:bg-emerald-200"
+                                    : "bg-amber-100 text-amber-900 hover:bg-amber-200"
+                                )}
+                              >
+                                {value === "WORK" && loanGroupName ? `WORK (${loanGroupName})` : value}
+                              </button>
+                            </Td>
+                          );
+                        })}
+                      </tr>
+                    ))}
+                </Fragment>
+              );
+            })}
+          </tbody>
+        </Table>
+      </TableWrapper>
+
+      {overrideDialog && dialogWorker && dialogWeek !== null && dialogHomeGroupId && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4"
+          onClick={() => setOverrideDialog(null)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Assign worker to team for week"
+            className="w-full max-w-md rounded-2xl border border-border bg-white p-4 shadow-2xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="space-y-1">
+              <h3 className="text-base font-bold">Assign worker to team</h3>
+              <div className="text-sm text-muted-foreground">
+                {dialogWorker.name}, W{dialogWeek}
+              </div>
+            </div>
+
+            <div className="mt-3 space-y-1">
+              <div className="text-xs font-semibold text-muted-foreground">Team for this week</div>
+              <Select
+                value={overrideDialog.selectedGroupId}
+                onChange={(event) =>
+                  setOverrideDialog((prev) =>
+                    prev
+                      ? {
+                          ...prev,
+                          selectedGroupId: event.target.value
+                        }
+                      : prev
+                  )
+                }
+              >
+                {project.groups.map((group) => (
+                  <option key={group.id} value={group.id}>
+                    {group.name}
+                    {group.id === dialogHomeGroupId ? " (home)" : ""}
+                  </option>
+                ))}
+              </Select>
+              <div className="text-xs text-muted-foreground">
+                If the selected team is the worker&apos;s home team, override will be removed.
+              </div>
+            </div>
+
+            <div className="mt-4 flex flex-wrap justify-end gap-2">
+              <Button variant="outline" onClick={() => setOverrideDialog(null)}>
+                Cancel
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() =>
+                  setOverrideDialog((prev) =>
+                    prev
+                      ? {
+                          ...prev,
+                          selectedGroupId: dialogHomeGroupId
+                        }
+                      : prev
+                  )
+                }
+              >
+                Use home team
+              </Button>
+              <Button onClick={applyOverrideDialog}>Apply</Button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+
+===== D:\Software\ied\Lomalistat\src\view\components\Stepper.tsx =====
+
+import { cn } from "../../lib/utils";
+
+interface StepperProps {
+  steps: string[];
+  current: number;
+  onStepChange: (step: number) => void;
+}
+
+export function Stepper({ steps, current, onStepChange }: StepperProps) {
+  return (
+    <ol className="grid gap-2 md:grid-cols-6">
+      {steps.map((step, index) => {
+        const active = index === current;
+        const complete = index < current;
+        return (
+          <li key={step}>
+            <button
+              type="button"
+              onClick={() => onStepChange(index)}
+              className={cn(
+                "w-full rounded-xl border px-3 py-2 text-left text-xs font-semibold transition md:text-sm",
+                active && "border-primary bg-primary text-primary-foreground",
+                complete && "border-green-500 bg-green-50 text-green-800",
+                !active && !complete && "border-border bg-white text-muted-foreground hover:text-foreground"
+              )}
+            >
+              {index + 1}. {step}
+            </button>
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
+
+
+===== D:\Software\ied\Lomalistat\src\view\components\ViolationsPanel.tsx =====
+
+import { useEffect, useMemo, useState } from "react";
+import { AlertTriangle, ShieldCheck } from "lucide-react";
+import type { ProjectData, Violation } from "../../model/types";
+import {
+  computeCoverage,
+  countWorkersWithSkillWorking,
+  countWorkersWorkingInGroup,
+  evaluateGroupWeek,
+  getWorkerEffectiveGroupForWeek
+} from "../../engine/constraints";
+import { Badge } from "../../components/ui/badge";
+import { Button } from "../../components/ui/button";
+import { Card, CardTitle } from "../../components/ui/card";
+import { cn } from "../../lib/utils";
+
+interface ViolationsPanelProps {
+  project: ProjectData;
+  onSuggestAssign: (workerId: string, week: number, groupId: string | null) => void;
+  onSelectWorker?: (workerId: string) => void;
+  selectedWorkerId?: string | null;
+}
+
+interface BackfillSuggestion {
+  workerId: string;
+  workerName: string;
+  fromGroupId: string;
+  fromGroupName: string;
+  targetActualAfter: number;
+  remainingMissing: number;
+  donorSafe: boolean;
+}
+
+function statusVariant(missing: number): "success" | "warning" | "danger" {
+  if (missing <= 0) {
+    return "success";
+  }
+  if (missing === 1) {
+    return "warning";
+  }
+  return "danger";
+}
+
+function setOverrideForWeek(
+  base: ProjectData["plan"]["groupOverrides"],
+  workerId: string,
+  week: number,
+  workerHomeGroupId: string,
+  targetGroupId: string
+): ProjectData["plan"]["groupOverrides"] {
+  const next: ProjectData["plan"]["groupOverrides"] = {
+    ...base,
+    [workerId]: {
+      ...(base[workerId] ?? {})
+    }
+  };
+
+  if (targetGroupId === workerHomeGroupId) {
+    delete next[workerId][week];
+    if (Object.keys(next[workerId]).length === 0) {
+      delete next[workerId];
+    }
+  } else {
+    next[workerId][week] = targetGroupId;
+  }
+
+  return next;
+}
+
+function buildBackfillSuggestions(
+  project: ProjectData,
+  violation: Violation
+): BackfillSuggestion[] {
+  if (violation.missing <= 0) {
+    return [];
+  }
+
+  const baseOverrides = project.plan.groupOverrides ?? {};
+  const assignments = project.plan.assignments;
+  const groupNameById = new Map(project.groups.map((group) => [group.id, group.name]));
+  const suggestions: BackfillSuggestion[] = [];
+
+  for (const worker of project.workers) {
+    if ((assignments[worker.id]?.[violation.week] ?? "WORK") !== "WORK") {
+      continue;
+    }
+
+    const currentGroupId = getWorkerEffectiveGroupForWeek(
+      project,
+      assignments,
+      baseOverrides,
+      worker.id,
+      violation.week
+    );
+    if (!currentGroupId || currentGroupId === violation.groupId) {
+      continue;
+    }
+
+    if (violation.type === "SKILL" && violation.skillId && !worker.skillIds.includes(violation.skillId)) {
+      continue;
+    }
+
+    const updatedOverrides = setOverrideForWeek(
+      baseOverrides,
+      worker.id,
+      violation.week,
+      worker.groupId,
+      violation.groupId
+    );
+
+    const targetActualAfter =
+      violation.type === "HEADCOUNT"
+        ? countWorkersWorkingInGroup(
+            project,
+            assignments,
+            violation.groupId,
+            violation.week,
+            updatedOverrides
+          )
+        : countWorkersWithSkillWorking(
+            project,
+            assignments,
+            violation.groupId,
+            violation.week,
+            violation.skillId ?? "",
+            updatedOverrides
+          );
+
+    if (targetActualAfter <= violation.actual) {
+      continue;
+    }
+
+    const donorCheck = evaluateGroupWeek(
+      project,
+      assignments,
+      currentGroupId,
+      violation.week,
+      updatedOverrides
+    );
+
+    suggestions.push({
+      workerId: worker.id,
+      workerName: worker.name,
+      fromGroupId: currentGroupId,
+      fromGroupName: groupNameById.get(currentGroupId) ?? currentGroupId,
+      targetActualAfter,
+      remainingMissing: Math.max(0, violation.required - targetActualAfter),
+      donorSafe: donorCheck.ok
+    });
+  }
+
+  return suggestions
+    .sort((a, b) => {
+      if (a.donorSafe !== b.donorSafe) {
+        return a.donorSafe ? -1 : 1;
+      }
+      if (a.remainingMissing !== b.remainingMissing) {
+        return a.remainingMissing - b.remainingMissing;
+      }
+      return a.workerName.localeCompare(b.workerName);
+    })
+    .slice(0, 8);
+}
+
+export function ViolationsPanel({
+  project,
+  onSuggestAssign,
+  onSelectWorker,
+  selectedWorkerId
+}: ViolationsPanelProps) {
+  const [expandedViolationId, setExpandedViolationId] = useState<string | null>(null);
+  const [selectedUnmetId, setSelectedUnmetId] = useState<string | null>(null);
+
+  const coverageRows = useMemo(() => computeCoverage(project), [project]);
+  const groupMap = useMemo(
+    () => new Map(project.groups.map((group) => [group.id, group.name])),
+    [project.groups]
+  );
+  const skillMap = useMemo(
+    () => new Map(project.skills.map((skill) => [skill.id, skill.name])),
+    [project.skills]
+  );
+  const workerMap = useMemo(
+    () => new Map(project.workers.map((worker) => [worker.id, worker.name])),
+    [project.workers]
+  );
+  const requestMap = useMemo(
+    () => new Map(project.requests.map((request) => [request.id, request])),
+    [project.requests]
+  );
+
+  const expandedViolation = useMemo(
+    () => project.violations.find((violation) => violation.id === expandedViolationId) ?? null,
+    [expandedViolationId, project.violations]
+  );
+  const expandedSuggestions = useMemo(
+    () => (expandedViolation ? buildBackfillSuggestions(project, expandedViolation) : []),
+    [expandedViolation, project]
+  );
+
+  useEffect(() => {
+    if (!selectedUnmetId) {
+      return;
+    }
+    const exists = project.unmetRequests.some((item) => item.id === selectedUnmetId);
+    if (!exists) {
+      setSelectedUnmetId(null);
+    }
+  }, [project.unmetRequests, selectedUnmetId]);
+
+  return (
+    <div className="space-y-4">
+      <Card className="space-y-3">
+        <CardTitle>Headcount + Skill coverage</CardTitle>
+        <div className="max-h-64 space-y-2 overflow-auto pr-1">
+          {coverageRows.map((row) => (
+            <div key={`${row.groupId}-${row.week}`} className="rounded-xl border border-border p-2 text-xs">
+              <div className="mb-1 flex items-center justify-between">
+                <strong>
+                  {row.groupName} / W{row.week}
+                </strong>
+                <Badge variant={statusVariant(row.headcount.missing)}>
+                  HC {row.headcount.actual}/{row.headcount.required}
+                </Badge>
+              </div>
+              <div className="flex flex-wrap gap-1">
+                {row.skills.length === 0 && <Badge variant="outline">No skill requirements</Badge>}
+                {row.skills.map((skill) => (
+                  <Badge key={`${row.groupId}-${row.week}-${skill.skillId}`} variant={statusVariant(skill.missing)}>
+                    {skill.skillName}: {skill.actual}/{skill.required}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </Card>
+
+      <Card className="space-y-3">
+        <div className="flex items-center justify-between">
+          <CardTitle>Violations ({project.violations.length})</CardTitle>
+          {project.violations.length === 0 ? (
+            <ShieldCheck size={18} className="text-green-600" />
+          ) : (
+            <AlertTriangle size={18} className="text-red-600" />
+          )}
+        </div>
+        <div className="max-h-56 space-y-2 overflow-auto pr-1 text-xs">
+          {project.violations.length === 0 && (
+            <div className="rounded-xl bg-green-50 p-2 text-green-800">No violations.</div>
+          )}
+          {project.violations.map((violation) => (
+            <div
+              key={violation.id}
+              className={cn(
+                "rounded-xl border p-2",
+                violation.missing > 0 ? "border-red-300 bg-red-50" : "border-border bg-white"
+              )}
+            >
+              <button
+                type="button"
+                onClick={() =>
+                  setExpandedViolationId((prev) => (prev === violation.id ? null : violation.id))
+                }
+                className="w-full text-left"
+              >
+                <div className="font-semibold">
+                  W{violation.week} / {groupMap.get(violation.groupId) ?? violation.groupId}
+                </div>
+                <div>
+                  {violation.type}
+                  {violation.skillId ? ` (${skillMap.get(violation.skillId) ?? violation.skillId})` : ""} req{" "}
+                  {violation.required}, actual {violation.actual}, missing {violation.missing}
+                </div>
+                <div className="text-[11px] text-muted-foreground">
+                  Click to {expandedViolationId === violation.id ? "hide" : "show"} backfill suggestions
+                </div>
+              </button>
+
+              {expandedViolationId === violation.id && (
+                <div className="mt-2 space-y-2 rounded-lg border border-red-200 bg-white p-2">
+                  <div className="text-[11px] font-semibold text-muted-foreground">Suggested backfills</div>
+                  {expandedSuggestions.length === 0 && (
+                    <div className="text-[11px] text-muted-foreground">
+                      No direct candidate found from other groups for this week.
+                    </div>
+                  )}
+                  {expandedSuggestions.map((suggestion) => (
+                    <div
+                      key={`${violation.id}-${suggestion.workerId}`}
+                      className="rounded-lg border border-border p-2"
+                    >
+                      <div className="font-semibold">{suggestion.workerName}</div>
+                      <div>
+                        From {suggestion.fromGroupName}
+                        {" -> "}
+                        {groupMap.get(violation.groupId) ?? violation.groupId}
+                      </div>
+                      <div>
+                        After move: actual {suggestion.targetActualAfter}/{violation.required}, missing{" "}
+                        {suggestion.remainingMissing}
+                      </div>
+                      <div className={suggestion.donorSafe ? "text-green-700" : "text-amber-700"}>
+                        Donor group check: {suggestion.donorSafe ? "safe" : "risk (may cause donor violation)"}
+                      </div>
+                      <Button
+                        className="mt-2"
+                        variant={suggestion.donorSafe ? "default" : "outline"}
+                        onClick={() =>
+                          onSuggestAssign(suggestion.workerId, violation.week, violation.groupId)
+                        }
+                      >
+                        Assign for W{violation.week}
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </Card>
+
+      <Card className="space-y-3">
+        <CardTitle>Unmet requests ({project.unmetRequests.length})</CardTitle>
+        <div className="text-xs text-muted-foreground">
+          Unmet means the request was not granted because granting it would break a hard constraint.
+        </div>
+        <div className="max-h-56 space-y-2 overflow-auto pr-1 text-xs">
+          {project.unmetRequests.length === 0 && (
+            <div className="rounded-xl bg-green-50 p-2 text-green-800">All requests are met.</div>
+          )}
+          {project.unmetRequests.map((unmet) => {
+            const request = requestMap.get(unmet.requestId);
+            const isActive = selectedUnmetId === unmet.id;
+            const isWorkerSelected = selectedWorkerId === unmet.workerId;
+            return (
+              <button
+                key={unmet.id}
+                type="button"
+                onClick={() => {
+                  setSelectedUnmetId(unmet.id);
+                  onSelectWorker?.(unmet.workerId);
+                }}
+                className={cn(
+                  "w-full rounded-xl border p-2 text-left",
+                  isActive
+                    ? "border-sky-400 bg-sky-50"
+                    : isWorkerSelected
+                      ? "border-amber-400 bg-amber-50"
+                      : "border-amber-300 bg-amber-50"
+                )}
+              >
+                <div className="font-semibold">
+                  {workerMap.get(unmet.workerId) ?? unmet.workerId} / W{unmet.week}
+                </div>
+                <div>
+                  Request: W{request?.startWeek ?? "?"}-W{request?.endWeek ?? "?"}, P
+                  {request?.priority ?? "?"}
+                </div>
+                <div>
+                  If granted, would violate: {unmet.reasonType} / {groupMap.get(unmet.groupId) ?? unmet.groupId}
+                  {unmet.skillId ? ` / ${skillMap.get(unmet.skillId) ?? unmet.skillId}` : ""}
+                </div>
+                <div>
+                  required {unmet.required}, would be {unmet.actual}, missing {unmet.missing}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+
+===== D:\Software\ied\Lomalistat\src\view\components\WorkerDetailsPanel.tsx =====
+
+import { useMemo } from "react";
+import type { ProjectData } from "../../model/types";
+import { Badge } from "../../components/ui/badge";
+import { Card, CardTitle } from "../../components/ui/card";
+
+interface WorkerDetailsPanelProps {
+  project: ProjectData;
+  workerId: string | null;
+}
+
+export function WorkerDetailsPanel({ project, workerId }: WorkerDetailsPanelProps) {
+  const worker = useMemo(
+    () => project.workers.find((item) => item.id === workerId) ?? null,
+    [project.workers, workerId]
+  );
+  const groupMap = useMemo(
+    () => new Map(project.groups.map((group) => [group.id, group.name])),
+    [project.groups]
+  );
+  const skillMap = useMemo(
+    () => new Map(project.skills.map((skill) => [skill.id, skill.name])),
+    [project.skills]
+  );
+  const requests = useMemo(
+    () =>
+      worker
+        ? project.requests
+            .filter((request) => request.workerId === worker.id)
+            .sort((a, b) => a.startWeek - b.startWeek)
+        : [],
+    [project.requests, worker]
+  );
+  const unmetForWorker = useMemo(
+    () =>
+      worker
+        ? project.unmetRequests.filter((unmet) => unmet.workerId === worker.id).slice(0, 12)
+        : [],
+    [project.unmetRequests, worker]
+  );
+  const vacationWeeks = useMemo(() => {
+    if (!worker) {
+      return [];
+    }
+    const assignments = project.plan.assignments[worker.id] ?? {};
+    return Object.entries(assignments)
+      .filter(([, assignment]) => assignment === "VACATION")
+      .map(([week]) => Number(week))
+      .sort((a, b) => a - b);
+  }, [project.plan.assignments, worker]);
+  const borrowedWeeks = useMemo(() => {
+    if (!worker) {
+      return [];
+    }
+    const overrides = project.plan.groupOverrides?.[worker.id] ?? {};
+    return Object.entries(overrides)
+      .map(([week, groupId]) => ({ week: Number(week), groupId }))
+      .sort((a, b) => a.week - b.week);
+  }, [project.plan.groupOverrides, worker]);
+
+  return (
+    <Card className="space-y-3">
+      <CardTitle>Worker details</CardTitle>
+      {!worker && <div className="rounded-xl bg-slate-100 p-2 text-sm">Select a worker from the planner grid.</div>}
+
+      {worker && (
+        <>
+          <div className="rounded-xl border border-border p-3 text-sm">
+            <div className="font-semibold">{worker.name}</div>
+            <div className="text-xs text-muted-foreground">
+              Group: {groupMap.get(worker.groupId) ?? worker.groupId}
+            </div>
+          </div>
+
+          <div className="space-y-1">
+            <div className="text-xs font-semibold text-muted-foreground">Skills</div>
+            <div className="flex flex-wrap gap-1">
+              {worker.skillIds.length === 0 && <Badge variant="outline">No skills</Badge>}
+              {worker.skillIds.map((skillId) => (
+                <Badge key={skillId} variant="outline">
+                  {skillMap.get(skillId) ?? skillId}
+                </Badge>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-1">
+            <div className="text-xs font-semibold text-muted-foreground">Vacation requests</div>
+            <div className="space-y-1 text-xs">
+              {requests.length === 0 && <div className="rounded-lg bg-slate-100 p-2">No requests</div>}
+              {requests.map((request) => (
+                <div key={request.id} className="rounded-lg border border-border p-2">
+                  W{request.startWeek}-W{request.endWeek}, priority {request.priority}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-1">
+            <div className="text-xs font-semibold text-muted-foreground">Planned vacation weeks</div>
+            <div className="flex flex-wrap gap-1">
+              {vacationWeeks.length === 0 && <Badge variant="outline">None</Badge>}
+              {vacationWeeks.map((week) => (
+                <Badge key={week} variant="warning">
+                  W{week}
+                </Badge>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-1">
+            <div className="text-xs font-semibold text-muted-foreground">Unmet reasons</div>
+            <div className="space-y-1 text-xs">
+              {unmetForWorker.length === 0 && <div className="rounded-lg bg-green-50 p-2 text-green-800">None</div>}
+              {unmetForWorker.map((item) => (
+                <div key={item.id} className="rounded-lg border border-amber-300 bg-amber-50 p-2">
+                  W{item.week}: {item.reasonType} req {item.required}, actual {item.actual}, missing{" "}
+                  {item.missing}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-1">
+            <div className="text-xs font-semibold text-muted-foreground">Borrowed to other groups</div>
+            <div className="space-y-1 text-xs">
+              {borrowedWeeks.length === 0 && <div className="rounded-lg bg-slate-100 p-2">None</div>}
+              {borrowedWeeks.map((entry) => (
+                <div key={`${entry.week}-${entry.groupId}`} className="rounded-lg border border-border p-2">
+                  W{entry.week}: {groupMap.get(entry.groupId) ?? entry.groupId}
+                </div>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+    </Card>
+  );
+}
+
+
+===== D:\Software\ied\Lomalistat\src\view\layout\Container.tsx =====
+
+import type { ReactNode } from "react";
+
+interface ContainerProps {
+  children: ReactNode;
+}
+
+export function Container({ children }: ContainerProps) {
+  return <main className="w-full flex-1 px-4 pb-8 pt-4 md:px-6">{children}</main>;
+}
+
+
+===== D:\Software\ied\Lomalistat\src\view\layout\PrivacyFooter.tsx =====
+
+import { useEffect, useState } from "react";
+import { Info, X } from "lucide-react";
+import { Button } from "../../components/ui/button";
+
+export function PrivacyFooter() {
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setOpen(false);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [open]);
+
+  return (
+    <>
+      <footer className="border-t border-slate-200 bg-white/95">
+        <div className="flex w-full flex-col gap-2 px-4 py-2 text-[11px] leading-4 text-slate-700 md:px-6">
+          <div className="grid gap-4 md:grid-cols-3 md:items-start md:justify-items-center">
+            <div className="w-full max-w-[420px]">
+              <div className="mb-1 font-semibold">Suomi</div>
+              <ul className="space-y-1">
+                <li>Offline: tiedot tallentuvat vain tahan selaimeen (IndexedDB).</li>
+                <li>Sovellus ei laheta tietoja verkkoon.</li>
+                <li>Ala syota henkilotietoja tai arkaluontoista dataa. Kayta tunnisteita (esim. T1, T2).</li>
+                <li>Muista varmuuskopio Export-toiminnolla.</li>
+              </ul>
+              <div className="mt-1.5">
+                <button
+                  type="button"
+                  onClick={() => setOpen(true)}
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+                >
+                  <Info size={14} />
+                  Tietosuoja & Offline
+                </button>
+              </div>
+            </div>
+            <div className="w-full max-w-[420px]">
+              <div className="mb-1 font-semibold">English</div>
+              <ul className="space-y-1">
+                <li>Offline: data is stored only in this browser (IndexedDB).</li>
+                <li>The app does not send data to the network.</li>
+                <li>Do not enter personal or sensitive data. Use identifiers (for example T1, T2).</li>
+                <li>Remember to back up using Export.</li>
+              </ul>
+            </div>
+            <div className="w-full max-w-[420px]">
+              <div className="mb-1 font-semibold">Made by Antsa</div>
+              <ul className="space-y-1 text-slate-700">
+                <li>A good vacation schedule isn&apos;t seen, it&apos;s felt.</li>
+                <li>That&apos;s why every name on the list matters.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </footer>
+
+      {open && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4"
+          onClick={() => setOpen(false)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Tietosuoja and Privacy Offline information"
+            className="w-full max-w-3xl rounded-2xl border border-border bg-white p-4 shadow-2xl md:p-5"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="text-lg font-bold">Tietosuoja & Offline / Privacy & Offline</h2>
+              <Button variant="outline" size="sm" onClick={() => setOpen(false)}>
+                <X size={14} className="mr-1" /> Close
+              </Button>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2 text-sm">
+                <div className="font-semibold">Suomi</div>
+                <ul className="list-disc space-y-1 pl-5 text-slate-700">
+                  <li>
+                    Tama sovellus toimii offline-first: kaikki syottamasi tiedot tallennetaan
+                    vain taman selaimen paikalliseen tietokantaan (IndexedDB).
+                  </li>
+                  <li>
+                    Sovellus ei laheta tai tallenna tietoja palvelimelle eika kayta analytiikkaa.
+                  </li>
+                  <li>
+                    Ala syota henkilotietoja tai arkaluontoista dataa (esim. taydet nimet,
+                    henkilotunnukset, terveystiedot). Suosittelemme kayttamaan tunnisteita (T1,
+                    T2) tai nimikirjaimia.
+                  </li>
+                  <li>
+                    Paikallinen data voi kadota, jos selaimen data tyhjennetaan tai tyopaikan
+                    profiili nollautuu. Kayta Export/Import-toimintoa varmuuskopiointiin.
+                  </li>
+                  <li>Vastuu syotetysta sisallosta on kayttajalla.</li>
+                </ul>
+              </div>
+
+              <div className="space-y-2 text-sm">
+                <div className="font-semibold">English</div>
+                <ul className="list-disc space-y-1 pl-5 text-slate-700">
+                  <li>
+                    This app is offline-first: all entered data is stored only in this browser
+                    (IndexedDB).
+                  </li>
+                  <li>
+                    The app does not send or store data to a server and does not use analytics.
+                  </li>
+                  <li>
+                    Do not enter personal or sensitive data (for example full names, national ID
+                    numbers, or health data). Use identifiers like T1, T2, or initials.
+                  </li>
+                  <li>
+                    Local data may be lost if browser data is cleared or the work profile is reset.
+                    Use Export/Import for backups.
+                  </li>
+                  <li>The user is responsible for the content they enter.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+
+===== D:\Software\ied\Lomalistat\src\view\layout\Topbar.tsx =====
+
+import { useEffect, useRef, useState } from "react";
+import {
+  Download,
+  FileText,
+  FileUp,
+  FlaskConical,
+  RotateCcw,
+  Save,
+  Wand2
+} from "lucide-react";
+import { useProjectStore } from "../../controller/useProjectStore";
+import { exportProjectToJson } from "../../controller/project-io";
+import {
+  isSavePickerSupported,
+  pickSaveFileHandle,
+  saveBlobFileWithDialog,
+  saveTextFileWithDialog,
+  type SaveFileHandle,
+  writeTextToFileHandle
+} from "../../lib/utils";
+import { Button } from "../../components/ui/button";
+
+export function Topbar() {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const autoSaveTimerRef = useRef<number | null>(null);
+  const lastAutoSavedContentRef = useRef<string>("");
+  const project = useProjectStore((state) => state.project);
+  const page = useProjectStore((state) => state.page);
+  const setPage = useProjectStore((state) => state.setPage);
+  const importProject = useProjectStore((state) => state.importProject);
+  const exportProject = useProjectStore((state) => state.exportProject);
+  const generateDemoData = useProjectStore((state) => state.generateDemoData);
+  const resetLocalData = useProjectStore((state) => state.resetLocalData);
+  const [autoSaveEnabled, setAutoSaveEnabled] = useState(false);
+  const [autoSaveHandle, setAutoSaveHandle] = useState<SaveFileHandle | null>(null);
+  const [autoSaveState, setAutoSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+
+  useEffect(
+    () => () => {
+      if (autoSaveTimerRef.current) {
+        window.clearTimeout(autoSaveTimerRef.current);
+      }
+    },
+    []
+  );
+
+  useEffect(() => {
+    if (!project) {
+      setAutoSaveEnabled(false);
+      setAutoSaveState("idle");
+      lastAutoSavedContentRef.current = "";
+    }
+  }, [project]);
+
+  useEffect(() => {
+    if (!autoSaveEnabled || !autoSaveHandle || !project) {
+      return;
+    }
+
+    if (autoSaveTimerRef.current) {
+      window.clearTimeout(autoSaveTimerRef.current);
+    }
+
+    autoSaveTimerRef.current = window.setTimeout(() => {
+      void (async () => {
+        try {
+          const content = exportProjectToJson(project);
+          if (content === lastAutoSavedContentRef.current) {
+            return;
+          }
+          setAutoSaveState("saving");
+          await writeTextToFileHandle(autoSaveHandle, content);
+          lastAutoSavedContentRef.current = content;
+          setAutoSaveState("saved");
+        } catch {
+          setAutoSaveEnabled(false);
+          setAutoSaveState("error");
+          window.alert("Auto-save failed. Auto-save to file was turned off.");
+        }
+      })();
+    }, 700);
+
+    return () => {
+      if (autoSaveTimerRef.current) {
+        window.clearTimeout(autoSaveTimerRef.current);
+      }
+    };
+  }, [autoSaveEnabled, autoSaveHandle, project]);
+
+  const ensureAutoSaveFileHandle = async (): Promise<SaveFileHandle | null> => {
+    if (autoSaveHandle) {
+      return autoSaveHandle;
+    }
+    if (!isSavePickerSupported()) {
+      window.alert("Auto-save to a chosen file requires a browser with File System Access API support.");
+      return null;
+    }
+    const data = exportProject();
+    if (!data) {
+      return null;
+    }
+    const handle = await pickSaveFileHandle(data.filename, {
+      description: "Project JSON",
+      mimeType: "application/json",
+      extensions: [".json"]
+    });
+    if (!handle) {
+      return null;
+    }
+    setAutoSaveHandle(handle);
+    setAutoSaveState("idle");
+    lastAutoSavedContentRef.current = "";
+    return handle;
+  };
+
+  const writeCurrentProjectToAutoSaveFile = async (handle: SaveFileHandle): Promise<boolean> => {
+    if (!project) {
+      return false;
+    }
+    try {
+      const content = exportProjectToJson(project);
+      setAutoSaveState("saving");
+      await writeTextToFileHandle(handle, content);
+      lastAutoSavedContentRef.current = content;
+      setAutoSaveState("saved");
+      return true;
+    } catch {
+      setAutoSaveState("error");
+      return false;
+    }
+  };
+
+  const toggleAutoSave = async () => {
+    if (!project) {
+      return;
+    }
+    if (autoSaveEnabled) {
+      setAutoSaveEnabled(false);
+      setAutoSaveState("idle");
+      return;
+    }
+
+    const handle = await ensureAutoSaveFileHandle();
+    if (!handle) {
+      return;
+    }
+    const written = await writeCurrentProjectToAutoSaveFile(handle);
+    if (!written) {
+      window.alert("Could not start auto-save for the selected file.");
+      setAutoSaveEnabled(false);
+      return;
+    }
+    setAutoSaveEnabled(true);
+  };
+
+  const chooseAutoSaveFile = async () => {
+    if (!project) {
+      return;
+    }
+    if (!isSavePickerSupported()) {
+      window.alert("This browser does not support choosing an auto-save file.");
+      return;
+    }
+    const data = exportProject();
+    if (!data) {
+      return;
+    }
+    const handle = await pickSaveFileHandle(data.filename, {
+      description: "Project JSON",
+      mimeType: "application/json",
+      extensions: [".json"]
+    });
+    if (!handle) {
+      return;
+    }
+    setAutoSaveHandle(handle);
+    lastAutoSavedContentRef.current = "";
+    if (autoSaveEnabled) {
+      const ok = await writeCurrentProjectToAutoSaveFile(handle);
+      if (!ok) {
+        setAutoSaveEnabled(false);
+        window.alert("Could not write to the selected file. Auto-save was turned off.");
+      }
+    } else {
+      setAutoSaveState("idle");
+    }
+  };
+
+  const autoSaveStatusText =
+    autoSaveState === "saving"
+      ? "saving..."
+      : autoSaveState === "saved"
+        ? "saved"
+        : autoSaveState === "error"
+          ? "error"
+          : "idle";
+
+  return (
+    <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
+      <div className="flex w-full flex-wrap items-center gap-2 px-4 py-3 md:px-6">
+        <div className="mr-3 flex items-center gap-2">
+          <Wand2 size={18} className="text-primary" />
+          <div>
+            <div className="text-sm font-bold">Lomalistat</div>
+            <div className="text-xs text-muted-foreground">Offline-first / IndexedDB only</div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".json,application/json"
+            className="hidden"
+            onChange={async (event) => {
+              const file = event.target.files?.[0];
+              event.target.value = "";
+              if (!file) {
+                return;
+              }
+              const text = await file.text();
+              await importProject(text);
+            }}
+          />
+          <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
+            <FileUp size={14} className="mr-1" /> Import JSON
+          </Button>
+          <Button
+            variant="outline"
+            onClick={async () => {
+              const data = exportProject();
+              if (!data) {
+                return;
+              }
+              try {
+                await saveTextFileWithDialog(data.filename, data.content, {
+                  description: "Project JSON",
+                  mimeType: "application/json",
+                  extensions: [".json"]
+                });
+              } catch {
+                window.alert("Saving JSON failed in this browser.");
+              }
+            }}
+            disabled={!project}
+          >
+            <Download size={14} className="mr-1" /> Export JSON
+          </Button>
+          <Button
+            variant="outline"
+            onClick={async () => {
+              if (!project) {
+                return;
+              }
+              const vacationsOnly = window.confirm(
+                "Export vacations-only PDF?\n\nOK = vacations only\nCancel = full report (includes groups, skills and violations)"
+              );
+              const { exportProjectToPdf } = await import("../../controller/project-pdf");
+              const pdf = await exportProjectToPdf(project, {
+                mode: vacationsOnly ? "vacations_only" : "full"
+              });
+              const normalizedBytes = new Uint8Array(Array.from(pdf.bytes));
+              const blob = new Blob([normalizedBytes], { type: "application/pdf" });
+              try {
+                await saveBlobFileWithDialog(pdf.filename, blob, {
+                  description: "PDF document",
+                  mimeType: "application/pdf",
+                  extensions: [".pdf"]
+                });
+              } catch {
+                window.alert("Saving PDF failed in this browser.");
+              }
+            }}
+            disabled={!project}
+          >
+            <FileText size={14} className="mr-1" /> Export PDF
+          </Button>
+          <Button onClick={() => void generateDemoData(1337)}>
+            <FlaskConical size={14} className="mr-1" /> Generate demo data (250 ppl)
+          </Button>
+          <Button
+            variant="danger"
+            onClick={() => {
+              const confirmReset = window.confirm(
+                "Delete all locally stored data from this browser? This cannot be undone."
+              );
+              if (confirmReset) {
+                void resetLocalData();
+              }
+            }}
+          >
+            <RotateCcw size={14} className="mr-1" /> Clear local data
+          </Button>
+          <Button
+            size="sm"
+            variant={autoSaveEnabled ? "default" : "outline"}
+            onClick={() => void toggleAutoSave()}
+            disabled={!project}
+          >
+            <Save size={13} className="mr-1" /> Auto-save {autoSaveEnabled ? "ON" : "OFF"}
+          </Button>
+          <Button size="sm" variant="outline" onClick={() => void chooseAutoSaveFile()} disabled={!project}>
+            Set auto-save file
+          </Button>
+          <div className="text-xs text-muted-foreground">
+            {autoSaveEnabled ? `Auto-save: ${autoSaveStatusText}` : "Auto-save: off"}
+            {autoSaveHandle?.name ? ` (${autoSaveHandle.name})` : ""}
+          </div>
+        </div>
+
+        <div className="ml-auto flex items-center gap-2">
+          <Button variant={page === "wizard" ? "default" : "outline"} onClick={() => setPage("wizard")}>
+            Wizard
+          </Button>
+          <Button
+            variant={page === "planner" ? "default" : "outline"}
+            onClick={() => setPage("planner")}
+            disabled={!project}
+          >
+            Planner
+          </Button>
+        </div>
+      </div>
+    </header>
+  );
+}
+
+
+===== D:\Software\ied\Lomalistat\src\view\pages\PlannerPage.tsx =====
+
+import { useEffect, useMemo, useState } from "react";
+import { CalendarCheck2, Sparkles, TriangleAlert } from "lucide-react";
+import { useProjectStore } from "../../controller/useProjectStore";
+import { listWeeks } from "../../model/weeks";
+import { Badge } from "../../components/ui/badge";
+import { Button } from "../../components/ui/button";
+import { Card, CardDescription, CardTitle } from "../../components/ui/card";
+import { PlannerGrid } from "../components/PlannerGrid";
+import { WorkerDetailsPanel } from "../components/WorkerDetailsPanel";
+import { ViolationsPanel } from "../components/ViolationsPanel";
+
+export function PlannerPage() {
+  const project = useProjectStore((state) => state.project);
+  const toggleWeekAssignment = useProjectStore((state) => state.toggleWeekAssignment);
+  const setWeekGroupOverride = useProjectStore((state) => state.setWeekGroupOverride);
+  const generatePlan = useProjectStore((state) => state.generatePlan);
+  const generatePlanWithTransfers = useProjectStore((state) => state.generatePlanWithTransfers);
+  const isMagicGenerating = useProjectStore((state) => state.isMagicGenerating);
+  const recalcViolations = useProjectStore((state) => state.recalcViolations);
+  const [selectedWorkerId, setSelectedWorkerId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!project) {
+      setSelectedWorkerId(null);
+      return;
+    }
+    if (project.workers.length === 0) {
+      setSelectedWorkerId(null);
+      return;
+    }
+    const exists = selectedWorkerId
+      ? project.workers.some((worker) => worker.id === selectedWorkerId)
+      : false;
+    if (!exists) {
+      setSelectedWorkerId(project.workers[0].id);
+    }
+  }, [project, selectedWorkerId]);
+
+  const stats = useMemo(() => {
+    if (!project) {
+      return null;
+    }
+    const weeks = listWeeks(project.timeWindow);
+    const totalCells = project.workers.length * weeks.length;
+    let vacationCells = 0;
+    for (const worker of project.workers) {
+      for (const week of weeks) {
+        if (project.plan.assignments[worker.id]?.[week] === "VACATION") {
+          vacationCells += 1;
+        }
+      }
+    }
+    return {
+      weeks: weeks.length,
+      totalCells,
+      vacationCells
+    };
+  }, [project]);
+
+  if (!project) {
+    return (
+      <Card>
+        <CardTitle>No project loaded</CardTitle>
+        <CardDescription>Import JSON, create a project, or generate demo-data first.</CardDescription>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_380px]">
+      <div className="space-y-4 xl:col-start-1">
+        <Card className="space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <CardTitle>Planner / {project.project.name}</CardTitle>
+              <CardDescription>
+                {project.timeWindow.year} - weeks {project.timeWindow.startWeek}..{project.timeWindow.endWeek}
+              </CardDescription>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" onClick={() => generatePlan()}>
+                <CalendarCheck2 size={14} className="mr-1" /> Regenerate
+              </Button>
+              <Button onClick={() => void generatePlanWithTransfers()} disabled={isMagicGenerating}>
+                <Sparkles size={14} className="mr-1" />
+                {isMagicGenerating ? "Generating..." : "Magic regenerate"}
+              </Button>
+              <Button variant="outline" onClick={() => recalcViolations()}>
+                <TriangleAlert size={14} className="mr-1" /> Recalc
+              </Button>
+            </div>
+          </div>
+          {stats && (
+            <div className="space-y-2">
+              <div className="text-xs text-muted-foreground">
+                Click cell = WORK/VACATION. Double-click WORK cell = assign worker to another team for that week.
+              </div>
+              <div className="text-xs text-muted-foreground">
+                Magic regenerate also tries automatic cross-team backfills to fulfill more requests.
+              </div>
+              <div className="flex flex-wrap gap-2 text-xs">
+                <Badge variant="outline">Workers: {project.workers.length}</Badge>
+                <Badge variant="outline">Weeks: {stats.weeks}</Badge>
+                <Badge variant="outline">Vacation cells: {stats.vacationCells}</Badge>
+                <Badge variant={project.violations.length ? "danger" : "success"}>
+                  Violations: {project.violations.length}
+                </Badge>
+                <Badge variant={project.unmetRequests.length ? "warning" : "success"}>
+                  Unmet requests: {project.unmetRequests.length}
+                </Badge>
+              </div>
+            </div>
+          )}
+        </Card>
+
+        <PlannerGrid
+          project={project}
+          onToggle={toggleWeekAssignment}
+          onSetGroupOverride={setWeekGroupOverride}
+          selectedWorkerId={selectedWorkerId}
+          onSelectWorker={setSelectedWorkerId}
+        />
+      </div>
+
+      <div className="space-y-4 xl:col-start-2">
+        <WorkerDetailsPanel project={project} workerId={selectedWorkerId} />
+        <ViolationsPanel
+          project={project}
+          onSuggestAssign={setWeekGroupOverride}
+          onSelectWorker={setSelectedWorkerId}
+          selectedWorkerId={selectedWorkerId}
+        />
+      </div>
+    </div>
+  );
+}
+
+
+===== D:\Software\ied\Lomalistat\src\view\pages\WizardPage.tsx =====
+
+import { useEffect, useMemo, useState } from "react";
+import { ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
+import { useProjectStore } from "../../controller/useProjectStore";
+import { listWeeks } from "../../model/weeks";
+import { Badge } from "../../components/ui/badge";
+import { Button } from "../../components/ui/button";
+import { Card, CardDescription, CardTitle } from "../../components/ui/card";
+import { Checkbox } from "../../components/ui/checkbox";
+import { Input } from "../../components/ui/input";
+import { NumberInput } from "../../components/ui/number-input";
+import { Label } from "../../components/ui/label";
+import { Select } from "../../components/ui/select";
+import { Stepper } from "../components/Stepper";
+
+const steps = [
+  "Project + weeks",
+  "Groups",
+  "Workers",
+  "Skills + requirements",
+  "Requests",
+  "Generate"
+];
+
+export function WizardPage() {
+  const project = useProjectStore((state) => state.project);
+  const wizardStep = useProjectStore((state) => state.wizardStep);
+  const setWizardStep = useProjectStore((state) => state.setWizardStep);
+  const setPage = useProjectStore((state) => state.setPage);
+
+  const createProject = useProjectStore((state) => state.createProject);
+  const updateProjectName = useProjectStore((state) => state.updateProjectName);
+  const setTimeWindow = useProjectStore((state) => state.setTimeWindow);
+  const addGroup = useProjectStore((state) => state.addGroup);
+  const updateGroup = useProjectStore((state) => state.updateGroup);
+  const removeGroup = useProjectStore((state) => state.removeGroup);
+  const addWorker = useProjectStore((state) => state.addWorker);
+  const updateWorker = useProjectStore((state) => state.updateWorker);
+  const removeWorker = useProjectStore((state) => state.removeWorker);
+  const addSkill = useProjectStore((state) => state.addSkill);
+  const updateSkill = useProjectStore((state) => state.updateSkill);
+  const removeSkill = useProjectStore((state) => state.removeSkill);
+  const setWorkerSkills = useProjectStore((state) => state.setWorkerSkills);
+  const addSkillRequirement = useProjectStore((state) => state.addSkillRequirement);
+  const updateSkillRequirement = useProjectStore((state) => state.updateSkillRequirement);
+  const removeSkillRequirement = useProjectStore((state) => state.removeSkillRequirement);
+  const addRequest = useProjectStore((state) => state.addRequest);
+  const updateRequest = useProjectStore((state) => state.updateRequest);
+  const removeRequest = useProjectStore((state) => state.removeRequest);
+  const generatePlan = useProjectStore((state) => state.generatePlan);
+  const generatePlanWithTransfers = useProjectStore((state) => state.generatePlanWithTransfers);
+  const isMagicGenerating = useProjectStore((state) => state.isMagicGenerating);
+
+  const [newProjectName, setNewProjectName] = useState("Lomaprojekti");
+  const [newProjectYear, setNewProjectYear] = useState(new Date().getFullYear());
+  const [newProjectStartWeek, setNewProjectStartWeek] = useState(1);
+  const [newProjectEndWeek, setNewProjectEndWeek] = useState(52);
+
+  const [groupName, setGroupName] = useState("");
+  const [groupMinHeadcount, setGroupMinHeadcount] = useState(8);
+
+  const [workerName, setWorkerName] = useState("");
+  const [workerGroupId, setWorkerGroupId] = useState("");
+  const [workerForSkills, setWorkerForSkills] = useState("");
+
+  const [skillName, setSkillName] = useState("");
+  const [reqGroupId, setReqGroupId] = useState("");
+  const [reqSkillId, setReqSkillId] = useState("");
+  const [reqMin, setReqMin] = useState(2);
+  const [reqMessage, setReqMessage] = useState<string | null>(null);
+  const [reqMessageType, setReqMessageType] = useState<"success" | "error">("success");
+
+  const [requestWorkerId, setRequestWorkerId] = useState("");
+  const [requestStartWeek, setRequestStartWeek] = useState(1);
+  const [requestEndWeek, setRequestEndWeek] = useState(1);
+  const [requestPriority, setRequestPriority] = useState<1 | 2 | 3>(2);
+  const [editingRequestId, setEditingRequestId] = useState<string | null>(null);
+  const [editingWorkerId, setEditingWorkerId] = useState("");
+  const [editingStartWeek, setEditingStartWeek] = useState(1);
+  const [editingEndWeek, setEditingEndWeek] = useState(1);
+  const [editingPriority, setEditingPriority] = useState<1 | 2 | 3>(2);
+
+  const weeks = useMemo(() => (project ? listWeeks(project.timeWindow) : []), [project]);
+
+  const requestSummary = useMemo(() => {
+    if (!project) {
+      return {
+        totalRequestWeeks: 0,
+        grantedWeeks: 0,
+        fulfillmentPercent: 0,
+        problemWeeks: []
+      };
+    }
+    const totalRequestWeeks = project.requests.reduce(
+      (sum, request) => sum + (request.endWeek - request.startWeek + 1),
+      0
+    );
+    let grantedWeeks = 0;
+    for (const request of project.requests) {
+      for (let week = request.startWeek; week <= request.endWeek; week += 1) {
+        const assignment = project.plan.assignments[request.workerId]?.[week] ?? "WORK";
+        if (assignment === "VACATION") {
+          grantedWeeks += 1;
+        }
+      }
+    }
+    const fulfillmentPercent =
+      totalRequestWeeks === 0 ? 0 : Math.round((grantedWeeks / totalRequestWeeks) * 100);
+    const problemWeeks = [...new Set([...project.violations.map((item) => item.week)])].sort(
+      (a, b) => a - b
+    );
+    return {
+      totalRequestWeeks,
+      grantedWeeks,
+      fulfillmentPercent,
+      problemWeeks
+    };
+  }, [project]);
+
+  useEffect(() => {
+    if (!project) {
+      return;
+    }
+    if (!reqGroupId && project.groups.length > 0) {
+      setReqGroupId(project.groups[0].id);
+    }
+  }, [project, reqGroupId]);
+
+  useEffect(() => {
+    if (!project) {
+      return;
+    }
+    if (!reqSkillId && project.skills.length > 0) {
+      setReqSkillId(project.skills[0].id);
+    }
+  }, [project, reqSkillId]);
+
+  if (!project) {
+    return (
+      <div className="space-y-4">
+        <Card className="space-y-4">
+          <CardTitle>Create project</CardTitle>
+          <CardDescription>
+            Start with name + year + week range. Data is stored only in local IndexedDB.
+          </CardDescription>
+          <div className="grid gap-3 md:grid-cols-4">
+            <div className="space-y-1">
+              <Label htmlFor="new-name">Project name</Label>
+              <Input id="new-name" value={newProjectName} onChange={(e) => setNewProjectName(e.target.value)} />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="new-year">Year</Label>
+              <NumberInput
+                id="new-year"
+                min={2020}
+                max={2100}
+                value={newProjectYear}
+                onValueChange={setNewProjectYear}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="new-start">Start week</Label>
+              <NumberInput
+                id="new-start"
+                min={1}
+                max={53}
+                value={newProjectStartWeek}
+                onValueChange={setNewProjectStartWeek}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="new-end">End week</Label>
+              <NumberInput
+                id="new-end"
+                min={1}
+                max={53}
+                value={newProjectEndWeek}
+                onValueChange={setNewProjectEndWeek}
+              />
+            </div>
+          </div>
+          <Button
+            className="w-full md:w-auto"
+            onClick={() =>
+              createProject({
+                name: newProjectName,
+                year: newProjectYear,
+                startWeek: newProjectStartWeek,
+                endWeek: newProjectEndWeek
+              })
+            }
+          >
+            Create project
+          </Button>
+        </Card>
+      </div>
+    );
+  }
+
+  const selectedWorker = project.workers.find((worker) => worker.id === workerForSkills);
+
+  const renderStep = () => {
+    if (wizardStep === 0) {
+      return (
+        <Card className="space-y-4">
+          <CardTitle>Project + time window</CardTitle>
+          <CardDescription>Edit project name, year and weeks.</CardDescription>
+          <div className="grid gap-3 md:grid-cols-4">
+            <div className="space-y-1">
+              <Label htmlFor="project-name">Project name</Label>
+              <Input
+                id="project-name"
+                value={project.project.name}
+                onChange={(e) => updateProjectName(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="year">Year</Label>
+              <NumberInput
+                id="year"
+                value={project.timeWindow.year}
+                onValueChange={(year) => setTimeWindow({ year })}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="start">Start week</Label>
+              <NumberInput
+                id="start"
+                min={1}
+                max={53}
+                value={project.timeWindow.startWeek}
+                onValueChange={(startWeek) => setTimeWindow({ startWeek })}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="end">End week</Label>
+              <NumberInput
+                id="end"
+                min={1}
+                max={53}
+                value={project.timeWindow.endWeek}
+                onValueChange={(endWeek) => setTimeWindow({ endWeek })}
+              />
+            </div>
+          </div>
+          <div className="rounded-xl bg-slate-100 p-3 text-sm">
+            <div className="font-semibold">Week count: {weeks.length}</div>
+            <div className="mt-1 text-xs text-muted-foreground">Weeks: {weeks.join(", ")}</div>
+          </div>
+        </Card>
+      );
+    }
+
+    if (wizardStep === 1) {
+      return (
+        <Card className="space-y-4">
+          <CardTitle>Groups</CardTitle>
+          <div className="grid gap-3 md:grid-cols-3">
+            <Input value={groupName} placeholder="Group name" onChange={(e) => setGroupName(e.target.value)} />
+            <NumberInput
+              min={0}
+              value={groupMinHeadcount}
+              onValueChange={setGroupMinHeadcount}
+            />
+            <Button
+              onClick={() => {
+                addGroup(groupName, groupMinHeadcount);
+                setGroupName("");
+              }}
+            >
+              Add group
+            </Button>
+          </div>
+          <div className="space-y-2">
+            {project.groups.map((group) => (
+              <div key={group.id} className="grid gap-2 rounded-xl border border-border p-2 md:grid-cols-[1fr_120px_100px]">
+                <Input
+                  value={group.name}
+                  onChange={(e) => updateGroup(group.id, { name: e.target.value })}
+                />
+                <NumberInput
+                  value={group.minHeadcountPerWeek}
+                  onValueChange={(minHeadcountPerWeek) =>
+                    updateGroup(group.id, { minHeadcountPerWeek })
+                  }
+                />
+                <Button variant="danger" onClick={() => removeGroup(group.id)}>
+                  Remove
+                </Button>
+              </div>
+            ))}
+          </div>
+        </Card>
+      );
+    }
+
+    if (wizardStep === 2) {
+      return (
+        <Card className="space-y-4">
+          <CardTitle>Workers</CardTitle>
+          {project.groups.length === 0 && (
+            <div className="rounded-xl bg-amber-50 p-2 text-amber-800">
+              Add at least one group first.
+            </div>
+          )}
+          {project.groups.length > 0 && (
+            <div className="grid gap-3 md:grid-cols-[1fr_1fr_140px]">
+              <Input value={workerName} placeholder="Worker name" onChange={(e) => setWorkerName(e.target.value)} />
+              <Select
+                value={workerGroupId || project.groups[0].id}
+                onChange={(e) => setWorkerGroupId(e.target.value)}
+              >
+                {project.groups.map((group) => (
+                  <option key={group.id} value={group.id}>
+                    {group.name}
+                  </option>
+                ))}
+              </Select>
+              <Button
+                onClick={() => {
+                  addWorker(workerName, workerGroupId || project.groups[0].id);
+                  setWorkerName("");
+                  if (!workerForSkills && project.workers.length > 0) {
+                    setWorkerForSkills(project.workers[0].id);
+                  }
+                }}
+              >
+                Add worker
+              </Button>
+            </div>
+          )}
+          <div className="space-y-2">
+            {project.workers.map((worker) => (
+              <div key={worker.id} className="grid gap-2 rounded-xl border border-border p-2 md:grid-cols-[1fr_1fr_100px]">
+                <Input value={worker.name} onChange={(e) => updateWorker(worker.id, { name: e.target.value })} />
+                <Select
+                  value={worker.groupId}
+                  onChange={(e) => updateWorker(worker.id, { groupId: e.target.value })}
+                >
+                  {project.groups.map((group) => (
+                    <option key={group.id} value={group.id}>
+                      {group.name}
+                    </option>
+                  ))}
+                </Select>
+                <Button variant="danger" onClick={() => removeWorker(worker.id)}>
+                  Remove
+                </Button>
+              </div>
+            ))}
+          </div>
+        </Card>
+      );
+    }
+
+    if (wizardStep === 3) {
+      return (
+        <Card className="space-y-4">
+          <CardTitle>Skills + requirements</CardTitle>
+          <div className="grid gap-3 md:grid-cols-[1fr_140px]">
+            <Input value={skillName} placeholder="Skill name" onChange={(e) => setSkillName(e.target.value)} />
+            <Button
+              onClick={() => {
+                addSkill(skillName);
+                setSkillName("");
+              }}
+            >
+              Add skill
+            </Button>
+          </div>
+
+          <div className="space-y-2">
+            {project.skills.map((skill) => (
+              <div key={skill.id} className="grid gap-2 rounded-xl border border-border p-2 md:grid-cols-[1fr_100px]">
+                <Input value={skill.name} onChange={(e) => updateSkill(skill.id, { name: e.target.value })} />
+                <Button variant="danger" onClick={() => removeSkill(skill.id)}>
+                  Remove
+                </Button>
+              </div>
+            ))}
+          </div>
+
+          <div className="rounded-xl border border-border p-3">
+            <div className="mb-2 text-sm font-semibold">Set worker skills</div>
+            <Select
+              value={workerForSkills}
+              onChange={(e) => setWorkerForSkills(e.target.value)}
+              className="mb-2"
+            >
+              <option value="">Select worker</option>
+              {project.workers.map((worker) => (
+                <option key={worker.id} value={worker.id}>
+                  {worker.name}
+                </option>
+              ))}
+            </Select>
+            {selectedWorker && (
+              <div className="grid gap-2 md:grid-cols-3">
+                {project.skills.map((skill) => {
+                  const checked = selectedWorker.skillIds.includes(skill.id);
+                  return (
+                    <label key={skill.id} className="flex items-center gap-2 rounded-lg border border-border p-2 text-sm">
+                      <Checkbox
+                        checked={checked}
+                        onChange={(e) => {
+                          const next = e.target.checked
+                            ? [...selectedWorker.skillIds, skill.id]
+                            : selectedWorker.skillIds.filter((id) => id !== skill.id);
+                          setWorkerSkills(selectedWorker.id, next);
+                        }}
+                      />
+                      {skill.name}
+                    </label>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          <div className="rounded-xl border border-border p-3">
+            <div className="mb-2 text-sm font-semibold">Skill requirements per group</div>
+            <div className="grid gap-2 md:grid-cols-4">
+              <Select value={reqGroupId} onChange={(e) => setReqGroupId(e.target.value)}>
+                <option value="">Group</option>
+                {project.groups.map((group) => (
+                  <option key={group.id} value={group.id}>
+                    {group.name}
+                  </option>
+                ))}
+              </Select>
+              <Select value={reqSkillId} onChange={(e) => setReqSkillId(e.target.value)}>
+                <option value="">Skill</option>
+                {project.skills.map((skill) => (
+                  <option key={skill.id} value={skill.id}>
+                    {skill.name}
+                  </option>
+                ))}
+              </Select>
+              <NumberInput min={0} value={reqMin} onValueChange={setReqMin} />
+              <Button
+                onClick={() => {
+                  if (!reqGroupId || !reqSkillId) {
+                    setReqMessageType("error");
+                    setReqMessage("Select both group and skill first.");
+                    return;
+                  }
+                  const existing = project.skillRequirements.find(
+                    (requirement) =>
+                      requirement.groupId === reqGroupId && requirement.skillId === reqSkillId
+                  );
+                  if (existing) {
+                    updateSkillRequirement(existing.id, { minPerWeek: reqMin });
+                    setReqMessageType("success");
+                    setReqMessage("Requirement updated on the existing row.");
+                    return;
+                  }
+                  addSkillRequirement(reqGroupId, reqSkillId, reqMin);
+                  setReqMessageType("success");
+                  setReqMessage("Requirement added. It applies to all weeks.");
+                }}
+              >
+                Add req
+              </Button>
+            </div>
+            {reqMessage && (
+              <div
+                className={
+                  reqMessageType === "success"
+                    ? "mt-2 rounded-lg bg-green-50 p-2 text-xs text-green-800"
+                    : "mt-2 rounded-lg bg-red-50 p-2 text-xs text-red-800"
+                }
+              >
+                {reqMessage}
+              </div>
+            )}
+
+            <div className="mt-2 space-y-2">
+              {project.skillRequirements.map((requirement) => (
+                <div
+                  key={requirement.id}
+                  className="grid gap-2 rounded-xl border border-border p-2 md:grid-cols-[1fr_1fr_100px_100px]"
+                >
+                  <Select
+                    value={requirement.groupId}
+                    onChange={(e) => updateSkillRequirement(requirement.id, { groupId: e.target.value })}
+                  >
+                    {project.groups.map((group) => (
+                      <option key={group.id} value={group.id}>
+                        {group.name}
+                      </option>
+                    ))}
+                  </Select>
+                  <Select
+                    value={requirement.skillId}
+                    onChange={(e) => updateSkillRequirement(requirement.id, { skillId: e.target.value })}
+                  >
+                    {project.skills.map((skill) => (
+                      <option key={skill.id} value={skill.id}>
+                        {skill.name}
+                      </option>
+                    ))}
+                  </Select>
+                  <NumberInput
+                    value={requirement.minPerWeek}
+                    onValueChange={(minPerWeek) =>
+                      updateSkillRequirement(requirement.id, { minPerWeek })
+                    }
+                  />
+                  <Button variant="danger" onClick={() => removeSkillRequirement(requirement.id)}>
+                    Remove
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </Card>
+      );
+    }
+
+    if (wizardStep === 4) {
+      return (
+        <Card className="space-y-4">
+          <CardTitle>Vacation requests</CardTitle>
+          <div className="grid gap-2 md:grid-cols-[1.5fr_120px_120px_120px_120px]">
+            <Select value={requestWorkerId} onChange={(e) => setRequestWorkerId(e.target.value)}>
+              <option value="">Worker</option>
+              {project.workers.map((worker) => (
+                <option key={worker.id} value={worker.id}>
+                  {worker.name}
+                </option>
+              ))}
+            </Select>
+            <NumberInput
+              min={project.timeWindow.startWeek}
+              max={project.timeWindow.endWeek}
+              value={requestStartWeek}
+              onValueChange={setRequestStartWeek}
+            />
+            <NumberInput
+              min={project.timeWindow.startWeek}
+              max={project.timeWindow.endWeek}
+              value={requestEndWeek}
+              onValueChange={setRequestEndWeek}
+            />
+            <Select
+              value={String(requestPriority)}
+              onChange={(e) => setRequestPriority(Number(e.target.value) as 1 | 2 | 3)}
+            >
+              <option value="1">Priority 1 (highest)</option>
+              <option value="2">Priority 2</option>
+              <option value="3">Priority 3 (lowest)</option>
+            </Select>
+            <Button
+              onClick={() => {
+                if (!requestWorkerId) {
+                  return;
+                }
+                addRequest(requestWorkerId, requestStartWeek, requestEndWeek, requestPriority);
+                setRequestPriority(2);
+              }}
+            >
+              Add
+            </Button>
+          </div>
+
+          <div className="space-y-2">
+            {project.requests.map((request) => {
+              const workerName =
+                project.workers.find((worker) => worker.id === request.workerId)?.name ??
+                request.workerId;
+
+              const isEditing = editingRequestId === request.id;
+              return (
+                <div key={request.id} className="rounded-xl border border-border p-2">
+                  {!isEditing && (
+                    <div className="grid gap-2 md:grid-cols-[1fr_220px_120px_120px]">
+                      <button
+                        type="button"
+                        className="text-left font-medium text-primary hover:underline"
+                        onClick={() => {
+                          setEditingRequestId(request.id);
+                          setEditingWorkerId(request.workerId);
+                          setEditingStartWeek(request.startWeek);
+                          setEditingEndWeek(request.endWeek);
+                          setEditingPriority(request.priority);
+                        }}
+                      >
+                        {workerName}
+                      </button>
+                      <div>
+                        W{request.startWeek}-W{request.endWeek}
+                      </div>
+                      <Badge variant="outline">P{request.priority}</Badge>
+                      <Button
+                        variant="danger"
+                        onClick={() => {
+                          if (editingRequestId === request.id) {
+                            setEditingRequestId(null);
+                          }
+                          removeRequest(request.id);
+                        }}
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  )}
+
+                  {isEditing && (
+                    <div className="space-y-2">
+                      <div className="grid gap-2 md:grid-cols-[1.5fr_120px_120px_120px_120px]">
+                        <Select value={editingWorkerId} onChange={(e) => setEditingWorkerId(e.target.value)}>
+                          {project.workers.map((worker) => (
+                            <option key={worker.id} value={worker.id}>
+                              {worker.name}
+                            </option>
+                          ))}
+                        </Select>
+                        <NumberInput
+                          min={project.timeWindow.startWeek}
+                          max={project.timeWindow.endWeek}
+                          value={editingStartWeek}
+                          onValueChange={setEditingStartWeek}
+                        />
+                        <NumberInput
+                          min={project.timeWindow.startWeek}
+                          max={project.timeWindow.endWeek}
+                          value={editingEndWeek}
+                          onValueChange={setEditingEndWeek}
+                        />
+                        <Select
+                          value={String(editingPriority)}
+                          onChange={(e) => setEditingPriority(Number(e.target.value) as 1 | 2 | 3)}
+                        >
+                          <option value="1">Priority 1 (highest)</option>
+                          <option value="2">Priority 2</option>
+                          <option value="3">Priority 3 (lowest)</option>
+                        </Select>
+                        <Button
+                          onClick={() => {
+                            updateRequest(request.id, {
+                              workerId: editingWorkerId,
+                              startWeek: editingStartWeek,
+                              endWeek: editingEndWeek,
+                              priority: editingPriority
+                            });
+                            setEditingRequestId(null);
+                          }}
+                        >
+                          Save
+                        </Button>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button variant="outline" onClick={() => setEditingRequestId(null)}>
+                          Cancel
+                        </Button>
+                        <Button
+                          variant="danger"
+                          onClick={() => {
+                            setEditingRequestId(null);
+                            removeRequest(request.id);
+                          }}
+                        >
+                          Remove
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </Card>
+      );
+    }
+
+    return (
+        <Card className="space-y-4">
+          <CardTitle>Generate list</CardTitle>
+          <CardDescription>
+            Deterministic heuristic: priority 1 to 2 to 3, stable by request id.
+          </CardDescription>
+        <div className="rounded-xl bg-slate-100 p-3 text-xs text-muted-foreground">
+          Normal generate uses only WORK/VACATION toggles. Magic generate also attempts automatic
+          cross-team backfills for the affected weeks.
+        </div>
+        <div className="grid gap-2 md:grid-cols-2">
+          <div className="rounded-xl bg-slate-100 p-3">
+            <div className="text-sm text-muted-foreground">Request fulfillment</div>
+            <div className="text-2xl font-bold">{requestSummary.fulfillmentPercent}%</div>
+            <div className="text-xs text-muted-foreground">
+              granted {requestSummary.grantedWeeks} / requested {requestSummary.totalRequestWeeks} weeks
+            </div>
+          </div>
+          <div className="rounded-xl bg-slate-100 p-3">
+            <div className="text-sm text-muted-foreground">Current issues</div>
+            <div className="text-2xl font-bold">
+              {project.unmetRequests.length} unmet / {project.violations.length} violations
+            </div>
+            <div className="text-xs text-muted-foreground">
+              Problem weeks:{" "}
+              {requestSummary.problemWeeks.length ? requestSummary.problemWeeks.join(", ") : "none"}
+            </div>
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" onClick={() => generatePlan()}>
+            <Sparkles size={14} className="mr-1" /> Generate lomalista
+          </Button>
+          <Button onClick={() => void generatePlanWithTransfers()} disabled={isMagicGenerating}>
+            <Sparkles size={14} className="mr-1" />
+            {isMagicGenerating ? "Generating..." : "Magic generate (with transfers)"}
+          </Button>
+          <Button variant="outline" onClick={() => setPage("planner")}>
+            Go to planner
+          </Button>
+        </div>
+      </Card>
+    );
+  };
+
+  return (
+    <div className="space-y-4">
+      <Stepper steps={steps} current={wizardStep} onStepChange={setWizardStep} />
+      {renderStep()}
+      <div className="flex items-center justify-between">
+        <Button variant="outline" onClick={() => setWizardStep(wizardStep - 1)} disabled={wizardStep === 0}>
+          <ArrowLeft size={14} className="mr-1" /> Previous
+        </Button>
+        <Button variant="outline" onClick={() => setWizardStep(wizardStep + 1)} disabled={wizardStep >= 5}>
+          Next <ArrowRight size={14} className="ml-1" />
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+
+===== D:\Software\ied\Lomalistat\src\App.tsx =====
+
+import { useEffect } from "react";
+import { AlertTriangle } from "lucide-react";
+import { useProjectStore } from "./controller/useProjectStore";
+import { Container } from "./view/layout/Container";
+import { PrivacyFooter } from "./view/layout/PrivacyFooter";
+import { Topbar } from "./view/layout/Topbar";
+import { PlannerPage } from "./view/pages/PlannerPage";
+import { WizardPage } from "./view/pages/WizardPage";
+import { Button } from "./components/ui/button";
+
+export default function App() {
+  const loading = useProjectStore((state) => state.loading);
+  const error = useProjectStore((state) => state.error);
+  const clearError = useProjectStore((state) => state.clearError);
+  const page = useProjectStore((state) => state.page);
+  const isMagicGenerating = useProjectStore((state) => state.isMagicGenerating);
+  const initialize = useProjectStore((state) => state.initialize);
+
+  useEffect(() => {
+    void initialize();
+  }, [initialize]);
+
+  return (
+    <div className="flex min-h-screen flex-col bg-app">
+      <Topbar />
+      <Container>
+        {loading && <div className="rounded-xl bg-slate-100 p-4">Loading local IndexedDB project...</div>}
+
+        {!loading && error && (
+          <div className="mb-4 flex items-center justify-between rounded-xl border border-red-300 bg-red-50 p-3 text-sm text-red-800">
+            <div className="flex items-center gap-2">
+              <AlertTriangle size={16} />
+              {error}
+            </div>
+            <Button size="sm" variant="outline" onClick={clearError}>
+              Close
+            </Button>
+          </div>
+        )}
+
+        {!loading && page === "wizard" && <WizardPage />}
+        {!loading && page === "planner" && <PlannerPage />}
+      </Container>
+      <PrivacyFooter />
+
+      {isMagicGenerating && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-900/50 backdrop-blur-[1px] p-4">
+          <div className="flex min-w-[320px] flex-col items-center rounded-2xl border border-border bg-white px-8 py-7 shadow-2xl">
+            <div className="relative mb-4 h-20 w-20">
+              <div className="absolute inset-0 rounded-full border-4 border-slate-200" />
+              <div className="absolute inset-0 animate-spin rounded-full border-4 border-transparent border-t-primary border-r-primary" />
+              <div className="absolute inset-[18px] rounded-full bg-primary/10 animate-pulse" />
+            </div>
+            <div className="text-base font-bold">Magic generation in progress</div>
+            <div className="mt-1 text-sm text-muted-foreground">Optimizing vacations and team transfers...</div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
+===== D:\Software\ied\Lomalistat\src\index.css =====
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 210 20% 98%;
+  --foreground: 222 47% 11%;
+  --border: 214 32% 91%;
+  --muted: 210 40% 96%;
+  --muted-foreground: 215 16% 47%;
+  --primary: 207 89% 31%;
+  --primary-foreground: 210 40% 98%;
+  --accent: 35 92% 65%;
+  --success: 142 71% 45%;
+  --warning: 43 96% 56%;
+  --danger: 0 84% 60%;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family:
+    "Segoe UI",
+    "Trebuchet MS",
+    "Tahoma",
+    sans-serif;
+  color: hsl(var(--foreground));
+  background:
+    radial-gradient(circle at 20% 0%, #dbeafe 0%, transparent 40%),
+    radial-gradient(circle at 80% 100%, #fde68a 0%, transparent 35%),
+    hsl(var(--background));
+}
+
+.bg-app {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.95) 100%),
+    repeating-linear-gradient(
+      -45deg,
+      rgba(148, 163, 184, 0.04),
+      rgba(148, 163, 184, 0.04) 10px,
+      rgba(148, 163, 184, 0.02) 10px,
+      rgba(148, 163, 184, 0.02) 20px
+    );
+}
+
+
+
+===== D:\Software\ied\Lomalistat\src\main.tsx =====
+
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { registerSW } from "virtual:pwa-register";
+import App from "./App";
+import "./index.css";
+
+registerSW({
+  immediate: true
+});
+
+ReactDOM.createRoot(document.getElementById("root")!).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+
+
+===== D:\Software\ied\Lomalistat\src\vite-env.d.ts =====
+
+/// <reference types="vite/client" />
+/// <reference types="vite-plugin-pwa/client" />
+
+
+===== D:\Software\ied\Lomalistat\.eslintrc.cjs =====
+
+module.exports = {
+  root: true,
+  env: {
+    browser: true,
+    es2022: true,
+    node: true
+  },
+  parser: "@typescript-eslint/parser",
+  parserOptions: {
+    ecmaVersion: "latest",
+    sourceType: "module"
+  },
+  plugins: ["@typescript-eslint", "react-hooks", "react-refresh"],
+  extends: [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:react-hooks/recommended"
+  ],
+  rules: {
+    "react-refresh/only-export-components": ["warn", { allowConstantExport: true }]
+  },
+  ignorePatterns: ["dist", "node_modules"]
+};
+
+
+
+===== D:\Software\ied\Lomalistat\.prettierrc.json =====
+
+{
+  "semi": true,
+  "singleQuote": false,
+  "printWidth": 100,
+  "trailingComma": "none"
+}
+
+
+
+===== D:\Software\ied\Lomalistat\eslint.config.js =====
+
+import tseslint from "@typescript-eslint/eslint-plugin";
+import tsParser from "@typescript-eslint/parser";
+import reactHooks from "eslint-plugin-react-hooks";
+import reactRefresh from "eslint-plugin-react-refresh";
+
+export default [
+  {
+    ignores: ["dist", "node_modules"]
+  },
+  {
+    files: ["**/*.{ts,tsx}"],
+    languageOptions: {
+      parser: tsParser,
+      parserOptions: {
+        ecmaVersion: "latest",
+        sourceType: "module",
+        ecmaFeatures: {
+          jsx: true
+        }
+      }
+    },
+    plugins: {
+      "@typescript-eslint": tseslint,
+      "react-hooks": reactHooks,
+      "react-refresh": reactRefresh
+    },
+    rules: {
+      ...tseslint.configs.recommended.rules,
+      ...reactHooks.configs.recommended.rules,
+      "react-refresh/only-export-components": ["warn", { allowConstantExport: true }]
+    }
+  }
+];
+
+
+
+===== D:\Software\ied\Lomalistat\index.html =====
+
+<!doctype html>
+<html lang="fi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b1220" />
+    <title>Lomalistat</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+
+
+
+===== D:\Software\ied\Lomalistat\package.json =====
+
+{
+  "name": "lomalistat",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint . --ext ts,tsx --max-warnings 0",
+    "format": "prettier --write ."
+  },
+  "dependencies": {
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.1.1",
+    "dexie": "^4.0.11",
+    "lucide-react": "^0.544.0",
+    "pdf-lib": "^1.17.1",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "tailwind-merge": "^3.3.1",
+    "zustand": "^5.0.8"
+  },
+  "devDependencies": {
+    "@types/node": "^24.5.2",
+    "@types/react": "^19.1.10",
+    "@types/react-dom": "^19.1.7",
+    "@typescript-eslint/eslint-plugin": "^8.43.0",
+    "@typescript-eslint/parser": "^8.43.0",
+    "@vitejs/plugin-react": "^5.0.2",
+    "autoprefixer": "^10.4.21",
+    "eslint": "^9.34.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.20",
+    "postcss": "^8.5.6",
+    "prettier": "^3.6.2",
+    "tailwindcss": "^3.4.17",
+    "typescript": "~5.9.2",
+    "vite": "^7.1.3",
+    "vite-plugin-pwa": "^1.2.0",
+    "vitest": "^3.2.4",
+    "workbox-build": "^7.4.0"
+  },
+  "overrides": {
+    "serialize-javascript": "^7.0.3"
+  }
+}
+
+
+===== D:\Software\ied\Lomalistat\postcss.config.cjs =====
+
+module.exports = {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {}
+  }
+};
+
+
+
+===== D:\Software\ied\Lomalistat\README.md =====
+
+# Lomalistat (Offline-First PWA)
+
+React + TypeScript web app for weekly vacation planning.
+
+## Core guarantees
+
+- Offline-first: runs as a PWA and caches only own build assets.
+- Local-only data: all project data is stored in browser IndexedDB.
+- No outbound data: no `fetch`, no `axios`, no websocket, no analytics, no telemetry.
+- No external assets: no CDN fonts/images/scripts.
+- Only transfer path is user-controlled JSON import/export.
+
+## Tech stack
+
+- Vite + React + TypeScript
+- Tailwind CSS
+- shadcn-style UI components (`src/components/ui`)
+- Zustand state store
+- IndexedDB via Dexie
+- PWA via `vite-plugin-pwa`
+- Tests via Vitest
+
+## Run
+
+```bash
+npm install
+npm run dev
+```
+
+Build and preview:
+
+```bash
+npm run build
+npm run preview
+```
+
+Quality checks:
+
+```bash
+npm run test
+npm run lint
+```
+
+## Import / Export
+
+- Import: topbar -> `Import JSON` -> select local `Project.json`.
+- Export: topbar -> `Export JSON` -> downloads `<project>_<year>_<start-end>.json`.
+- Export PDF: topbar -> `Export PDF` -> choose:
+  - vacations-only PDF
+  - full report PDF (includes groups, skills, violations)
+- Import performs:
+  - JSON parse
+  - schema migration to `schemaVersion: 1`
+  - structure validation
+  - save to IndexedDB
+
+## Demo button
+
+Topbar button `Generate demo data (250 ppl)` creates deterministic seeded demo data (`seed=1337`):
+
+- 250 workers
+- 4 groups with worker split 50/50/50/100
+- 16 skills
+- group headcount + skill requirements
+- each worker gets exactly one 4-week vacation request
+- request window is random within April-September
+- demo time window is April-September weeks only (planner columns follow this range)
+- deterministic generatePlan run
+
+## Wizard + Planner flow
+
+- Wizard steps:
+  1. Project + time window
+  2. Groups
+  3. Workers
+  4. Skills + requirements
+  5. Vacation requests
+  6. Generate + summary
+- Planner:
+  - Worker x Week grid (`WORK` / `VACATION`)
+  - click cell toggles assignment
+  - realtime violation recomputation
+  - side panel: headcount, skill coverage, violations, unmet requests
+
+## Storage model
+
+Project JSON is `schemaVersion: 1` and includes:
+
+- project metadata
+- time window
+- groups, skills, skill requirements
+- workers and vacation requests
+- plan assignments
+- violations and unmet requests
+
+## Directory layout
+
+- `src/model` domain types, validation, migration
+- `src/repository` IndexedDB + in-memory repos
+- `src/engine` constraints, violations, deterministic generation
+- `src/controller` store actions, demo data, import/export
+- `src/view` pages/components/layout
+
+## Security/privacy note
+
+The app is intentionally local-only. If browser devtools network tab shows outbound calls, treat it as a bug.
+
+## Dependency security note
+
+- `package.json` uses npm `overrides`:
+  - `"serialize-javascript": "^7.0.3"`
+- Reason:
+  - `workbox-build` (used by `vite-plugin-pwa`) pulls `@rollup/plugin-terser`, which requests `serialize-javascript` `^6.0.1`.
+  - npm audit flags `serialize-javascript <=7.0.2` (GHSA-5c6j-r48x-rmvq).
+  - Override lifts the resolved version to `7.0.3` while keeping Vite 7 + `vite-plugin-pwa` 1.x compatibility.
+
+
+===== D:\Software\ied\Lomalistat\tailwind.config.cjs =====
+
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: ["./index.html", "./src/**/*.{ts,tsx}"],
+  theme: {
+    extend: {
+      colors: {
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
+        border: "hsl(var(--border))",
+        muted: "hsl(var(--muted))",
+        "muted-foreground": "hsl(var(--muted-foreground))",
+        primary: "hsl(var(--primary))",
+        "primary-foreground": "hsl(var(--primary-foreground))",
+        accent: "hsl(var(--accent))",
+        success: "hsl(var(--success))",
+        warning: "hsl(var(--warning))",
+        danger: "hsl(var(--danger))"
+      },
+      borderRadius: {
+        xl: "0.9rem"
+      }
+    }
+  },
+  plugins: []
+};
+
+
+
+===== D:\Software\ied\Lomalistat\tsconfig.app.json =====
+
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+    "moduleResolution": "Bundler",
+    "allowImportingTsExtensions": false,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
+  },
+  "include": ["src"],
+  "exclude": ["src/**/*.test.ts", "src/test/**"]
+}
+
+
+===== D:\Software\ied\Lomalistat\tsconfig.json =====
+
+{
+  "files": [],
+  "references": [
+    {
+      "path": "./tsconfig.app.json"
+    },
+    {
+      "path": "./tsconfig.node.json"
+    }
+  ]
+}
+
+
+
+===== D:\Software\ied\Lomalistat\tsconfig.node.json =====
+
+{
+  "compilerOptions": {
+    "target": "ES2023",
+    "lib": ["ES2023"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+    "moduleResolution": "Bundler",
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "noEmit": true,
+    "types": ["node"]
+  },
+  "include": ["vite.config.ts", "vitest.config.ts"]
+}
+
+
+
+===== D:\Software\ied\Lomalistat\vite.config.ts =====
+
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import { VitePWA } from "vite-plugin-pwa";
+
+export default defineConfig({
+  plugins: [
+    react(),
+    VitePWA({
+      registerType: "prompt",
+      injectRegister: false,
+      includeAssets: ["icon.svg"],
+      manifest: {
+        name: "Lomalistat",
+        short_name: "Lomalistat",
+        description: "Offline-first viikkotason lomasuunnittelutyokalu",
+        start_url: "./",
+        display: "standalone",
+        background_color: "#0b1220",
+        theme_color: "#0b1220",
+        icons: [
+          {
+            src: "icon.svg",
+            sizes: "any",
+            type: "image/svg+xml",
+            purpose: "any maskable"
+          }
+        ]
+      },
+      workbox: {
+        cleanupOutdatedCaches: true,
+        clientsClaim: true,
+        globPatterns: ["**/*.{js,css,html,ico,png,svg,json,woff2}"],
+        skipWaiting: true,
+        runtimeCaching: []
+      },
+      devOptions: {
+        enabled: false
+      }
+    })
+  ]
+});
+
+
+===== D:\Software\ied\Lomalistat\vitest.config.ts =====
+
+import { defineConfig } from "vitest/config";
+
+export default defineConfig({
+  test: {
+    environment: "node",
+    globals: true,
+    include: ["src/**/*.test.ts"]
+  }
+});
+
