@@ -105,6 +105,65 @@ Huom:
 
 All rights reserved. Internal tool.
 
+#### Riippuvuudet ja kolmansien osapuolten lisenssit
+
+Ylla oleva All rights reserved -ehto koskee projektin omaa koodia.
+Kolmansien osapuolten kirjastot ja tyokalut sailyttavat omat lisenssinsa.
+Alla olevat versiot ovat `package-lock.json`-tiedostoon lukitut versiot;
+`package.json` maarittelee sallitut versioalueet.
+
+**Sovelluksen suorat riippuvuudet**
+
+| Riippuvuus | Lukittu versio | Lisenssi |
+| --- | --- | --- |
+| `class-variance-authority` | 0.7.1 | Apache-2.0 |
+| `clsx` | 2.1.1 | MIT |
+| `dexie` | 4.3.0 | Apache-2.0 |
+| `lucide-react` | 0.544.0 | ISC + MIT (Feather) |
+| `pdf-lib` | 1.17.1 | MIT |
+| `react` | 19.2.4 | MIT |
+| `react-dom` | 19.2.4 | MIT |
+| `tailwind-merge` | 3.5.0 | MIT |
+| `zustand` | 5.0.11 | MIT |
+
+**Suorat kehitys-, testaus- ja build-riippuvuudet**
+
+| Riippuvuus | Lukittu versio | Lisenssi |
+| --- | --- | --- |
+| `@types/node` | 24.11.0 | MIT |
+| `@types/react` | 19.2.14 | MIT |
+| `@types/react-dom` | 19.2.3 | MIT |
+| `@typescript-eslint/eslint-plugin` | 8.56.1 | MIT |
+| `@typescript-eslint/parser` | 8.56.1 | MIT |
+| `@vitejs/plugin-react` | 5.1.4 | MIT |
+| `autoprefixer` | 10.4.27 | MIT |
+| `eslint` | 9.39.3 | MIT |
+| `eslint-plugin-react-hooks` | 5.2.0 | MIT |
+| `eslint-plugin-react-refresh` | 0.4.26 | MIT |
+| `postcss` | 8.5.6 | MIT |
+| `prettier` | 3.8.1 | MIT |
+| `tailwindcss` | 3.4.19 | MIT |
+| `typescript` | 5.9.3 | Apache-2.0 |
+| `vite` | 7.3.1 | MIT |
+| `vite-plugin-pwa` | 1.2.0 | MIT |
+| `vitest` | 3.2.4 | MIT |
+| `workbox-build` | 7.4.0 | MIT |
+
+[THIRD_PARTY_NOTICES.txt](THIRD_PARTY_NOTICES.txt) sisaltaa alkuperaiset
+lisenssitekstit ja tekijanoikeusilmoitukset sovelluksen suorille ja valillisille
+riippuvuuksille, Workbox-paketeille seka ylla luetelluille suorille
+kehitystyokaluille. Mukana ovat myos pakettien omat mukana toimitetun koodin
+lisenssi-ilmoitukset, Dexien `NOTICE`, Luciden Feather-osuuksien MIT-ehdot
+ja pakon zlib-ehdot. Kaikkia listattuja paketteja ei sisally jokaiseen buildiin.
+
+Sailyta ilmoitustiedosto mukana, kun jaat sovelluksen lahdekoodia tai valmista
+selainversiota. Vite ei kopioi projektin juuren tekstitiedostoa automaattisesti:
+kopioi `THIRD_PARTY_NOTICES.txt` buildin jalkeen `dist`-hakemistoon ja jaa se
+muiden build-tiedostojen mukana. Jos jaat kehitystyokaluja tai `node_modules`-
+hakemiston, sailyta myos niiden valillisten riippuvuuksien alkuperaiset
+lisenssi- ja tekijanoikeustiedostot. Paivita taulukot ja ilmoitustiedosto,
+kun riippuvuudet tai lukitut versiot muuttuvat.
+
 ### 10) About
 
 Made by Antsa  
@@ -207,6 +266,65 @@ Note:
 ### 9) License
 
 All rights reserved. Internal tool.
+
+#### Dependencies and third-party licenses
+
+The All rights reserved statement above applies to this project's own code.
+Third-party libraries and tools retain their respective licenses.
+The versions below are those locked in `package-lock.json`;
+`package.json` specifies the permitted version ranges.
+
+**Direct application dependencies**
+
+| Dependency | Locked version | License |
+| --- | --- | --- |
+| `class-variance-authority` | 0.7.1 | Apache-2.0 |
+| `clsx` | 2.1.1 | MIT |
+| `dexie` | 4.3.0 | Apache-2.0 |
+| `lucide-react` | 0.544.0 | ISC + MIT (Feather) |
+| `pdf-lib` | 1.17.1 | MIT |
+| `react` | 19.2.4 | MIT |
+| `react-dom` | 19.2.4 | MIT |
+| `tailwind-merge` | 3.5.0 | MIT |
+| `zustand` | 5.0.11 | MIT |
+
+**Direct development, testing and build dependencies**
+
+| Dependency | Locked version | License |
+| --- | --- | --- |
+| `@types/node` | 24.11.0 | MIT |
+| `@types/react` | 19.2.14 | MIT |
+| `@types/react-dom` | 19.2.3 | MIT |
+| `@typescript-eslint/eslint-plugin` | 8.56.1 | MIT |
+| `@typescript-eslint/parser` | 8.56.1 | MIT |
+| `@vitejs/plugin-react` | 5.1.4 | MIT |
+| `autoprefixer` | 10.4.27 | MIT |
+| `eslint` | 9.39.3 | MIT |
+| `eslint-plugin-react-hooks` | 5.2.0 | MIT |
+| `eslint-plugin-react-refresh` | 0.4.26 | MIT |
+| `postcss` | 8.5.6 | MIT |
+| `prettier` | 3.8.1 | MIT |
+| `tailwindcss` | 3.4.19 | MIT |
+| `typescript` | 5.9.3 | Apache-2.0 |
+| `vite` | 7.3.1 | MIT |
+| `vite-plugin-pwa` | 1.2.0 | MIT |
+| `vitest` | 3.2.4 | MIT |
+| `workbox-build` | 7.4.0 | MIT |
+
+[THIRD_PARTY_NOTICES.txt](THIRD_PARTY_NOTICES.txt) contains the original
+license texts and copyright notices for the application's direct and transitive
+dependencies, the Workbox packages, and the direct development tools listed
+above. It also preserves the packages' own bundled-code notices, Dexie's
+`NOTICE`, the MIT terms for Lucide's Feather-derived portions, and pako's zlib
+terms. Not every listed package is included in every build.
+
+Keep the notices file with redistributed source code or compiled browser builds.
+Vite does not automatically copy the text file from the project root: after
+building, copy `THIRD_PARTY_NOTICES.txt` into `dist` and distribute it alongside
+the other build files. When redistributing development tools or `node_modules`,
+also preserve their transitive dependencies' original license and copyright
+files. Update the tables and notices whenever dependencies or locked versions
+change.
 
 ### 10) About
 
